@@ -1,0 +1,17 @@
+{
+  "name": "offlineMeeting",
+  "short_name": "ofm",
+  "description": "オフ会用販売管理アプリ",
+  "icons": [
+    {
+      "src": "/img/poncoin_192.png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "/img/poncoin_512.png",
+      "sizes": "512x512"
+    }
+  ],
+  "display": "standalone",
+  "start_url": "/"
+}

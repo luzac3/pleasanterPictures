@@ -1,0 +1,165 @@
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Filters;
+using Microsoft.AspNetCore.Mvc.ViewEngines;
+using Microsoft.AspNetCore.Mvc.ViewFeatures;
+using Microsoft.AspNetCore.SignalR;
+using offlineMeeting.Models;
+using offlineMeeting.Models.Entity.Login;
+using offlineMeeting.Models.Entity.Picture;
+using offlineMeeting.Models.JsonDataProperty;
+using offlineMeeting.Models.Process.Picture;
+using offlineMeeting.Models.Process.Share;
+using offlineMeeting.Models.ViewModel;
+using PleasanterBridge.src.APIBridge;
+using PleasanterBridge.src.DataRepository.Service;
+using System.Diagnostics;
+
+namespace offlineMeeting.Controllers
+{
+    public class PictureController : Controller
+    {
+        private readonly ViewRenderHelperProcess _viewRenderHelperProcess;
+        private readonly IHubContext<MyHub> _hubContext;
+        private readonly ILogger<PictureController> _logger;
+        private readonly IPleasanterApiBridge _bridge;
+        private readonly IPleasanterRepository _pleasanterRepository;
+        private long PictureSiteId;
+        private long AnswerSiteId;
+        private long JoinerSiteId;
+
+        public PictureController(
+            ILogger<PictureController> logger,
+            IHubContext<MyHub> hubContext,
+            IPleasanterApiBridge bridge,
+            IPleasanterRepository pleasanterRepository,
+            ICompositeViewEngine viewEngine,
+            ITempDataProvider tempDataProvider,
+            IServiceProvider serviceProvider
+        )
+        {
+            _logger = logger;
+            _hubContext = hubContext;
+            _bridge = bridge;
+            _pleasanterRepository = pleasanterRepository;
+            TableIdProperty tableIdProperty = new();
+            PictureSiteId = tableIdProperty.PictureSiteId;
+            AnswerSiteId = tableIdProperty.AnswerSiteId;
+            JoinerSiteId = tableIdProperty.JoinerSiteId;
+            _viewRenderHelperProcess = new ViewRenderHelperProcess(viewEngine, tempDataProvider, serviceProvider);
+        }
+
+        public override void OnActionExecuting(ActionExecutingContext context)
+        {
+            SetViewDataProcess setViewDataProcess = new();
+            ViewData["UserData"] = setViewDataProcess.SetUserData(HttpContext, _pleasanterRepository);
+            base.OnActionExecuting(context);
+        }
+
+        public IActionResult Index()
+        {
+            GetPictureProcess getPictureProcess = new(HttpContext, _pleasanterRepository, PictureSiteId);
+            PictureViewModel pictureViewModel = new PictureViewModel();
+            pictureViewModel.setPictureEntity(getPictureProcess.Get());
+
+            return View(pictureViewModel);
+        }
+
+        public IActionResult PictureList()
+        {
+            GetPictureProcess getPictureProcess = new(HttpContext, _pleasanterRepository, PictureSiteId);
+            PictureViewModel pictureViewModel = new PictureViewModel();
+            pictureViewModel.setPictureEntityList(getPictureProcess.GetList(PictureSiteId));
+
+            return View(pictureViewModel);
+        }
+
+        [HttpGet("Picture/GetPicture/{pictureId}")]
+        public async Task<IActionResult> GetPicture(long pictureId)
+        {
+            // fixme
+            GetPictureProcess getPictureProcess = new(HttpContext, _pleasanterRepository, PictureSiteId);
+            PictureViewModel pictureViewModel = new PictureViewModel();
+            pictureViewModel.setPictureEntity(getPictureProcess.Get(pictureId));
+
+            var html = await _viewRenderHelperProcess.RenderToStringAsync(this, "_Picture", pictureViewModel);
+            return Content(html, "text/html");
+        }
+
+        [HttpGet("Picture/Orner/{resultId}")]
+        public IActionResult Orner(long resultId)
+        {
+            GetPictureProcess getPictureProcess = new(HttpContext, _pleasanterRepository, PictureSiteId);
+            GetAnswerProcess getAnswerProcess = new(HttpContext, _pleasanterRepository, JoinerSiteId);
+            PictureViewModel pictureViewModel = new PictureViewModel();
+            pictureViewModel.setPictureEntity(getPictureProcess.Get(resultId));
+            pictureViewModel.setAnswerEntityList(getAnswerProcess.GetList(AnswerSiteId, resultId));
+
+            return View(pictureViewModel);
+        }
+
+        [HttpGet("Picture/SendPicture/{resultId}")]
+        public IActionResult SendPicture(long resultId)
+        {
+            SendPictureProcess sendPictureProcess = new(_hubContext, _bridge, _pleasanterRepository, PictureSiteId, HttpContext);
+
+            return Json(sendPictureProcess.Send(Convert.ToInt32(resultId)));
+        }
+
+        [HttpGet("Picture/ShowPicture/{resultId}")]
+        public IActionResult ShowPicture(long resultId)
+        {
+            GetAnswerProcess getAnswerProcess = new(HttpContext, _pleasanterRepository, JoinerSiteId);
+            PictureViewModel pictureViewModel = new PictureViewModel();
+            pictureViewModel.setAnswerEntityList(getAnswerProcess.GetList(AnswerSiteId, resultId));
+
+            return View(pictureViewModel);
+        }
+
+        [HttpGet("Picture/GetAnswer/{resultId}")]
+        public async Task<IActionResult> GetAnswer(long resultId)
+        {
+            GetAnswerProcess getAnswerProcess = new(HttpContext, _pleasanterRepository, JoinerSiteId);
+            PictureViewModel pictureViewModel = new PictureViewModel();
+            pictureViewModel.setAnswerEntity(getAnswerProcess.Get(resultId));
+
+            var html = await _viewRenderHelperProcess.RenderToStringAsync(this, "_UserAnswer", pictureViewModel);
+            return Content(html, "text/html");
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> SendAnswer([FromBody] AnswerPostEntity answerPostEntity)
+        {
+            SendAnswerProcess sendAnswerProcess = new(
+                hubContext: _hubContext, 
+                bridge: _bridge,
+                answerPostEntity: answerPostEntity, 
+                answerSiteId: AnswerSiteId, 
+                httpContext: HttpContext
+            );
+            string result = await sendAnswerProcess.Send();
+
+            return Json(result.ToString());
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> SendPoints([FromBody] List<PointPostEntity> pointPostEnties)
+        {
+            SendPointProcess sendAnswerProcess = new(
+                hubContext: _hubContext,
+                bridge: _bridge,
+                pointPostEnties: pointPostEnties, 
+                answerSiteId: AnswerSiteId, 
+                httpContext: HttpContext
+            );
+            string result = await sendAnswerProcess.Send();
+
+            return Json(result.ToString());
+        }
+
+        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
+        public IActionResult Error()
+        {
+            return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+        }
+    }
+}

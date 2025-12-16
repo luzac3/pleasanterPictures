@@ -1,0 +1,18 @@
+﻿{
+  "compilerOptions": {
+    "baseUrl": "./wwwroot/ts",
+    "paths": { "@root/*": [ "./*" ] },
+    "target": "ES2020",
+    "module": "ESNext",
+    "sourceMap": true,
+    "outDir": "./wwwroot/js",
+    "strict": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": false, //Windowsは大文字小文字判定を行わない
+    "moduleResolution": "node",
+    "skipLibCheck": true
+  },
+  "include": [
+    "./wwwroot/ts/**/*"
+  ]
+}

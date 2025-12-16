@@ -1,0 +1,25 @@
+@using offlineMeeting.Models.Entity.Picture
+@model offlineMeeting.Models.ViewModel.PicrtureViewModel
+
+@{
+    var path = Context.Request.Path.ToString();
+    <div class="answer">
+        <div>
+            <div>
+                <a href="@(Model.AnswerEntity?.Image)" class="picture_image_wrapper js-smartPhoto" data-caption="test" data-id="test" data-group="picture">
+                    <img src="@(Model.AnswerEntity?.Image)" class="picture_image" />
+                </a>
+            </div>
+        </div>
+        <div>
+            <p>@(Model.AnswerEntity?.UserName)</p>
+            <input type="text" class="user_cd nodisplay" />
+            <p class="show">
+                <input type="number" class="point" min="0" max="@(Model.AnswerEntity?.MaxPoint)" value="@(Model.AnswerEntity?.Point)" />
+                <span>点</span>
+            </p>
+            <p>@(Model.AnswerEntity?.AnswerTime)</p>
+        </div>
+        <input type="text" class="answer_id nodisplay" value="@(Model.AnswerEntity?.ResultId)" />
+    </div>
+}

@@ -1,0 +1,45 @@
+{
+  "name": "offlineMeeting",
+  "version": "2.4.7",
+  "main": "",
+  "scripts": {
+    "build": "webpack --mode development",
+    "watch": "webpack -w",
+    "start": "webpack-dev-server --host=0.0.0.0 --hot --inline --progress --colors  --history-api-fallback",
+    "release": "webpack --mode=production",
+    "publish": "npm run release && dotnet publish -c Release"
+  },
+  "author": "T.Osugi",
+  "license": "luza",
+  "devDependencies": {
+    "@types/bootbox": "^4.4.36",
+    "@types/bootstrap": "^5.1.6",
+    "@types/eonasdan-bootstrap-datetimepicker": "^4.17.29",
+    "@types/node": "^13.13.52",
+    "@types/hls.js": "",
+    "eslint": "",
+    "glob": "^13.0.0",
+    "json-loader": "^0.5.7",
+    "npm-run-all": "",
+    "rimraf": "^3.0.2",
+    "ts-loader": "^9.2.3",
+    "ts-node": "^8.10.2",
+    "ts-node-dev": "^1.1.8",
+    "typescript": "",
+    "webpack": "^5.103.0",
+    "webpack-cli": "^6.0.1",
+    "webpack-dev-server": "^5.2.2"
+  },
+  "dependencies": {
+    "@microsoft/signalr": "^8.0.0",
+    "@types/qrcodejs": "",
+    "install": "^0.13.0",
+    "msw": "^0.35.0",
+    "npm": "",
+    "npm-run-all": "",
+    "rimraf": "^3.0.2",
+    "ts-node": "^8.10.2",
+    "ts-node-dev": "^1.1.8"
+  },
+  "description": ""
+}

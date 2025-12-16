@@ -1,0 +1,39 @@
+@using offlineMeeting.Models.Entity.Picture
+@{
+    ViewData["Title"] = "ShowPicture";
+}
+@section Scripts {
+    <link rel="stylesheet" href="https://unpkg.com/smartphoto@latest/css/smartphoto.min.css">
+    <script src="https://unpkg.com/smartphoto@latest/js/smartphoto.min.js"></script>
+    <script src="~/js/PictureOrner.js" defer></script>
+    <link rel="stylesheet" href="~/css/Picture/Index.css" asp-append-version="true" />
+    <script>
+         document.addEventListener('DOMContentLoaded', function () {
+            new SmartPhoto(".js-smartPhoto");
+        });
+    </script>
+}
+@model offlineMeeting.Models.ViewModel.PictureViewModel
+
+<div id="answer_list">
+    @if (Model.AnswerEntityList != null)
+    {
+        foreach (AnswerEntity answerEntity in Model.AnswerEntityList)
+        {
+            <div class="answer">
+                <div>
+                    <a href="@(answerEntity.Image)" class="picture_image_wrapper js-smartPhoto" data-caption="test" data-id="test" data-group="picture">
+                        <img src="@(answerEntity.Image)" class="picture_image" />
+                    </a>
+                </div>
+                <div>
+                    <p>@(answerEntity.UserName)</p>
+                    <p>@(answerEntity.AnswerTime)</p>
+                </div>
+            </div>
+        }
+    }
+</div>
+<div>
+    <br /><button id="back" type="button">戻る</button>
+</div>

@@ -1,0 +1,89 @@
+using Microsoft.AspNetCore.SignalR;
+using offlineMeeting.Models.Entity.Login;
+using offlineMeeting.Models.Entity.Picture;
+using offlineMeeting.Models.Share;
+using PleasanterBridge.src.APIBridge;
+using PleasanterBridge.src.APIBridge.Contracts;
+using System.Net;
+using System.Text.Json;
+
+namespace offlineMeeting.Models.Process.Picture
+{
+    public class SendAnswerProcess
+    {
+        private readonly IHubContext<MyHub> _hubContext;
+        private readonly IPleasanterApiBridge _bridge;
+        private long AnswerSiteId;
+        private long EventId;
+        private AnswerPostEntity AnswerPostEntity;
+        private HttpContext HttpContext;
+
+        public SendAnswerProcess(
+            IHubContext<MyHub> hubContext,
+            IPleasanterApiBridge bridge,
+            AnswerPostEntity answerPostEntity,
+            long answerSiteId, 
+            HttpContext httpContext
+        )
+        {
+            _hubContext = hubContext;
+            _bridge = bridge;
+            ManageEventId manageEventId = new (httpContext);
+            ManageUserCd manageUserCd = new (httpContext);
+
+            EventId = manageEventId.GetEventId();
+
+            AnswerSiteId = answerSiteId;
+            AnswerPostEntity = answerPostEntity;
+            HttpContext = httpContext;
+        }
+
+        public async Task<string> Send()
+        {
+            long userCd = new ManageUserCd(HttpContext).GetUserCd();
+            if (userCd == 0)
+            {
+                return JsonSerializer.Serialize(new Dictionary<string, string> { { "status", "400" }, { "message", "ユーザコードがありません" } });
+            }
+
+            string base64Image = string.Empty;
+            if (!string.IsNullOrEmpty(AnswerPostEntity.Image))
+            {
+                int base64Index = AnswerPostEntity.Image.IndexOf("base64,");
+                if (base64Index >= 0)
+                {
+                    base64Image = AnswerPostEntity.Image.Substring(base64Index + 7);
+                }
+            }
+
+            SendAnswerEntity sendAnswerEntity = new
+            (
+                eventNumber: EventId.ToString(),
+                userCd: userCd.ToString(),
+                pictureId: AnswerPostEntity.PictureId != null ? AnswerPostEntity.PictureId.ToString() : string.Empty,
+                base64Image: base64Image
+            );
+
+            PleasanterApiResponse response = await _bridge.Insert(AnswerSiteId, sendAnswerEntity);
+
+            if (!response.StatusCode.Equals(HttpStatusCode.OK))
+            {
+                return JsonSerializer.Serialize(response);
+            }
+            else
+            {
+                var resultId = response.Id.ToString();
+                try
+                {
+                    await _hubContext.Clients.All.SendAsync("UserAnswerId", new Dictionary<string, string> { { "ResultId", resultId } });
+                }
+                catch
+                {
+                    throw new HubException("Hubへの送信に失敗しました");
+                }
+
+                return JsonSerializer.Serialize(new Dictionary<string, string> { { "status", "200" }, { "message", "回答を送信しました" },  { "ResultId", resultId } });
+            }
+        }
+    }
+}

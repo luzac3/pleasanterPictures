@@ -1,0 +1,26 @@
+@using offlineMeeting.Models.Entity.Picture
+@{
+    ViewData["Title"] = "PictureList";
+}
+@section Scripts {
+    <script src="~/js/PictureOrner.js" defer></script>
+    <link rel="stylesheet" href="~/css/Picture/Index.css" asp-append-version="true" />
+}
+@model offlineMeeting.Models.ViewModel.PictureViewModel
+
+<div id="picture_list">
+    @{
+        @foreach (PictureEntity pictureEntity in Model.PictureEntityList ?? new List<offlineMeeting.Models.Entity.Picture.PictureEntity> { })
+        {
+            <p>
+                <span>@(pictureEntity.Picture)-</span>
+                <a asp-area="" asp-controller="Picture" asp-action="Orner" asp-route-id="@(Convert.ToInt32(pictureEntity.ResultId))">管理者</a>
+                <span> - </span>
+                <a asp-area="" asp-controller="Picture" asp-action="ShowPicture" asp-route-id="@(Convert.ToInt32(pictureEntity.ResultId))">リスト</a>
+            </p>
+        }
+    }
+</div>
+<div>
+    <br /><button id="back" type="button">戻る</button>
+</div>
