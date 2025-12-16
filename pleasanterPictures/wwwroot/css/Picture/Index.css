@@ -67,3 +67,43 @@
     width: 95%;
     aspect-ratio: 1 / 2;
 }
+
+.color-palette {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+.color-palette-label {
+    font-weight: bold;
+    white-space: nowrap;
+}
+
+.color-palette-colors {
+    display: flex;
+    gap: 5px;
+    flex-wrap: wrap;
+}
+
+.color-button {
+    width: 30px;
+    height: 30px;
+    border: 2px solid transparent;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.color-button:hover {
+    transform: scale(1.1);
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
+}
+
+.color-button.active {
+    border-color: #333;
+    box-shadow: 0 0 8px rgba(0, 0, 0, 0.5);
+}

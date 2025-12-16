@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <PackageReference Include="PleasanterBridge" Version="1.2.7-local" />
+    <PackageReference Include="SixLabors.ImageSharp" Version="3.1.12" />
   </ItemGroup>
 
 </Project>

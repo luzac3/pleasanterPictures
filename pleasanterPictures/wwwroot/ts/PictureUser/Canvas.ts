@@ -5,6 +5,7 @@ export class Canvas {
     private isDrawing: boolean = false;
     private lastX: number = 0;
     private lastY: number = 0;
+    private drawColor: string = "#333";
 
     constructor () {
         this.CanvasElement = document.getElementById('textCanvas') as HTMLCanvasElement;
@@ -20,6 +21,7 @@ export class Canvas {
         this.Ctx = this.CanvasElement.getContext('2d')!;
         this.SetCanvas();
         this.ActivateCanvas();
+        this.SetColorPalette();
         this.SetDrawingPc();
         this.SetDrawingPhone();
 
@@ -49,6 +51,25 @@ export class Canvas {
         this.CanvasElement.style.height = rect.height + "px";
     }
 
+    private SetColorPalette = () => {
+        const colorButtons = document.querySelectorAll('.color-button');
+        colorButtons.forEach((button) => {
+            button.addEventListener('click', (e) => {
+                const color = (e.target as HTMLButtonElement).dataset.color;
+                if (color) {
+                    this.drawColor = color;
+                    // アクティブ状態を更新
+                    colorButtons.forEach(b => b.classList.remove('active'));
+                    (e.target as HTMLButtonElement).classList.add('active');
+                }
+            });
+        });
+        // デフォルトで最初のボタンをアクティブに
+        if (colorButtons.length > 0) {
+            (colorButtons[0] as HTMLButtonElement).classList.add('active');
+        }
+    }
+
     private SetDrawingPc = () => {
         this.CanvasElement.addEventListener('mousedown', (e) => {
             this.isDrawing = true;
@@ -67,13 +88,13 @@ export class Canvas {
             if (this.lastX === x && this.lastY === y) {
                 this.Ctx.beginPath();
                 this.Ctx.arc(x, y, 1 * dpr, 0, Math.PI * 2);
-                this.Ctx.fillStyle = "#333";
+                this.Ctx.fillStyle = this.drawColor;
                 this.Ctx.fill();
             } else {
                 this.Ctx.beginPath();
                 this.Ctx.moveTo(this.lastX, this.lastY);
                 this.Ctx.lineTo(x, y);
-                this.Ctx.strokeStyle = "#333";
+                this.Ctx.strokeStyle = this.drawColor;
                 this.Ctx.lineWidth = 2 * dpr;
                 this.Ctx.lineCap = "round";
                 this.Ctx.stroke();
@@ -113,13 +134,13 @@ export class Canvas {
             if (this.lastX === x && this.lastY === y) {
                 this.Ctx.beginPath();
                 this.Ctx.arc(x, y, 1 * dpr, 0, Math.PI * 2);
-                this.Ctx.fillStyle = "#333";
+                this.Ctx.fillStyle = this.drawColor;
                 this.Ctx.fill();
             } else {
                 this.Ctx.beginPath();
                 this.Ctx.moveTo(this.lastX, this.lastY);
                 this.Ctx.lineTo(x, y);
-                this.Ctx.strokeStyle = "#333";
+                this.Ctx.strokeStyle = this.drawColor;
                 this.Ctx.lineWidth = 2 * dpr;
                 this.Ctx.lineCap = "round";
                 this.Ctx.stroke();

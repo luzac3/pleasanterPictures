@@ -102,7 +102,7 @@ namespace offlineMeeting.Controllers
         {
             SendPictureProcess sendPictureProcess = new(_hubContext, _bridge, _pleasanterRepository, PictureSiteId, HttpContext);
 
-            return Json(sendPictureProcess.Send(Convert.ToInt32(resultId)));
+            return Json(sendPictureProcess.Send(Convert.ToInt64(resultId)));
         }
 
         [HttpGet("Picture/ShowPicture/{resultId}")]
