@@ -81,21 +81,23 @@
 .color-palette-label {
     font-weight: bold;
     white-space: nowrap;
+    font-size: clamp(12px, 2vw, 16px);
 }
 
 .color-palette-colors {
     display: flex;
-    gap: 5px;
+    gap: calc(var(--gap-size) * 0.5);
     flex-wrap: wrap;
 }
 
 .color-button {
-    width: 30px;
-    height: 30px;
+    width: var(--color-button-size);
+    height: var(--color-button-size);
     border: 2px solid transparent;
     border-radius: 4px;
     cursor: pointer;
     transition: all 0.2s;
+    flex-shrink: 0;
 }
 
 .color-button:hover {
@@ -107,3 +109,54 @@
     border-color: #333;
     box-shadow: 0 0 8px rgba(0, 0, 0, 0.5);
 }
+
+.drawing-tools {
+    display: flex;
+    flex-direction: column;
+    gap: calc(var(--gap-size) * 1.5);
+    margin-bottom: calc(var(--gap-size) * 1.5);
+    padding: calc(var(--gap-size) * 1.5);
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background-color: #f9f9f9;
+}
+
+.tools-section {
+    display: flex;
+    align-items: center;
+    gap: var(--gap-size);
+    flex-wrap: wrap;
+}
+
+.tool-buttons {
+    display: flex;
+    gap: calc(var(--gap-size) * 0.5);
+}
+
+.tool-button {
+    width: var(--tool-button-size);
+    height: var(--tool-button-size);
+    border: 2px solid #ddd;
+    border-radius: 4px;
+    background-color: #fff;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    padding: 0;
+    flex-shrink: 0;
+}
+    .tool-button:hover {
+        background-color: #f0f0f0;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    .tool-button.active {
+        border-color: #333;
+        background-color: #333;
+        color: #fff;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    }
+    .tool-button .material-symbols-outlined {
+        font-size: calc(var(--tool-button-size) * 0.6);
+    }
