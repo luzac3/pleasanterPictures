@@ -1,9 +1,9 @@
-using offlineMeeting.Models.Entity.Share;
-using offlineMeeting.Models.JsonDataProperty;
-using offlineMeeting.Models.Share;
 using PleasanterBridge.src.DataRepository.Service;
+using pleasanterPictures.Models.Entity.Share;
+using pleasanterPictures.Models.JsonDataProperty;
+using pleasanterPictures.Models.Share;
 
-namespace offlineMeeting.Models.Process.Share
+namespace pleasanterPictures.Models.Process.Share
 {
     public class SetViewDataProcess
     {

@@ -1,6 +1,4 @@
-using offlineMeeting.Models.Entity.Share;
-
-namespace offlineMeeting.Models.Entity.Picture
+namespace pleasanterPictures.Models.Entity.Picture
 {
     public class SendPictureEntity
     {
@@ -9,18 +7,7 @@ namespace offlineMeeting.Models.Entity.Picture
             bool active = true
         )
         {
-            CheckHash = new CheckHashEntity(active);
-        }
-
-        public class CheckHashEntity
-        {
-            public bool CheckA { get; set; }
-            public CheckHashEntity(
-                bool active = true
-            )
-            {
-                CheckA = active;
-            }
+            CheckA = active;
         }
     }
 }

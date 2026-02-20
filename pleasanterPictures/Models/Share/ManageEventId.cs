@@ -1,6 +1,6 @@
 ﻿using System.Data;
 
-namespace offlineMeeting.Models.Share
+namespace pleasanterPictures.Models.Share
 {
     public class ManageEventId
     {

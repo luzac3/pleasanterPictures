@@ -1,8 +1,7 @@
-﻿using offlineMeeting.Models.Entity.Share;
-using offlineMeeting.Models.Share;
+﻿using pleasanterPictures.Models.Share;
 using System.Text.Json;
 
-namespace offlineMeeting.Models.JsonDataProperty
+namespace pleasanterPictures.Models.JsonDataProperty
 {
     public class DBConnectEntity
     {

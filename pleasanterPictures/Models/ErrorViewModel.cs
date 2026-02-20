@@ -1,4 +1,4 @@
-namespace offlineMeeting.Models
+namespace pleasanterPictures.Models
 {
     public class ErrorViewModel
     {

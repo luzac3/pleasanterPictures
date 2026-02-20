@@ -1,6 +1,4 @@
-using offlineMeeting.Models.Entity.Share;
-
-namespace offlineMeeting.Models.Entity.Picture
+namespace pleasanterPictures.Models.Entity.Picture
 {
     public class SendPointEntity
     {

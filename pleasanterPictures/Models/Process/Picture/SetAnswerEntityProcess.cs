@@ -1,10 +1,10 @@
-using offlineMeeting.Models.Entity.Picture;
-using offlineMeeting.Models.Entity.Share;
-using offlineMeeting.Models.Process.Share;
 using PleasanterBridge.src.DataRepository.Entity;
 using PleasanterBridge.src.DataRepository.Service;
+using pleasanterPictures.Models.Entity.Picture;
+using pleasanterPictures.Models.Entity.Share;
+using pleasanterPictures.Models.Process.Share;
 
-namespace offlineMeeting.Models.Process.Picture
+namespace pleasanterPictures.Models.Process.Picture
 {
     public class SetAnswerEntityProcess
     {

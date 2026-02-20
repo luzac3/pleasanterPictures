@@ -1,4 +1,4 @@
-@using offlineMeeting.Models.Entity.Share;
+@using pleasanterPictures.Models.Entity.Share
 
 <!DOCTYPE html>
 <html lang="en">
@@ -21,7 +21,7 @@
             <nav class="navbar navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
                 <div id="menu" class="container-fluid">
                     @{
-                        JoinerEntity? userData = ViewData["UserData"] as offlineMeeting.Models.Entity.Share.JoinerEntity;
+                        JoinerEntity? userData = ViewData["UserData"] as JoinerEntity;
                         <div id="name_wrapper">
                             <span id="user_name">@userData?.UserName</span>
                         </div>

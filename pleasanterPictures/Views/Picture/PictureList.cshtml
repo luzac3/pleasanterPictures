@@ -1,4 +1,5 @@
-@using offlineMeeting.Models.Entity.Picture
+@using pleasanterPictures.Models.Entity.Picture
+@using pleasanterPictures.Models.ViewModel
 @{
     ViewData["Title"] = "PictureList";
 }
@@ -6,11 +7,11 @@
     <script src="~/js/PictureOrner.js" defer></script>
     <link rel="stylesheet" href="~/css/Picture/Index.css" asp-append-version="true" />
 }
-@model offlineMeeting.Models.ViewModel.PictureViewModel
+@model PictureViewModel
 
 <div id="picture_list">
     @{
-        @foreach (PictureEntity pictureEntity in Model.PictureEntityList ?? new List<offlineMeeting.Models.Entity.Picture.PictureEntity> { })
+        @foreach (PictureEntity pictureEntity in Model.PictureEntityList ?? new List<PictureEntity> { })
         {
             <p>
                 <span>@(pictureEntity.Picture)-</span>

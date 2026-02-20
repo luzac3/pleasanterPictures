@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using offlineMeeting.Models.Entity.Share;
+using pleasanterPictures.Models.Entity.Share;
 
-namespace offlineMeeting.Models.Share
+namespace pleasanterPictures.Models.Share
 {
     public class DBContext : DbContext
     {
