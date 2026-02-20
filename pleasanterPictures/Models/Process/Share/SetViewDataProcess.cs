@@ -27,10 +27,5 @@ namespace offlineMeeting.Models.Process.Share
                 return getUsersProcess.GetUserData(userCd);
             }
         }
-
-        public ElectronEntity SetElectron(bool isElectron = false)
-        {
-            return new ElectronEntity(isElectron: isElectron);
-        }
     }
 }

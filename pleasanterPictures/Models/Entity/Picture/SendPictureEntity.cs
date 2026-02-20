@@ -2,9 +2,9 @@ using offlineMeeting.Models.Entity.Share;
 
 namespace offlineMeeting.Models.Entity.Picture
 {
-    public class SendPictureEntity : ApiEntity
+    public class SendPictureEntity
     {
-        public CheckHashEntity CheckHash { get; set; }
+        public bool CheckA { get; set; }
         public SendPictureEntity(
             bool active = true
         )
