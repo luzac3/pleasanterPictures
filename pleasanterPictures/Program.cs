@@ -55,6 +55,6 @@ app.UseHttpsRedirection();
 app.MapHub<MyHub>("/hub");
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}");
+    pattern: "{controller=Picture}/{action=Index}/{id?}");
 
 app.Run();

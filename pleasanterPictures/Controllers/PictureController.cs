@@ -9,6 +9,7 @@ using offlineMeeting.Models.Entity.Picture;
 using offlineMeeting.Models.JsonDataProperty;
 using offlineMeeting.Models.Process.Picture;
 using offlineMeeting.Models.Process.Share;
+using offlineMeeting.Models.Share;
 using offlineMeeting.Models.ViewModel;
 using PleasanterBridge.src.APIBridge;
 using PleasanterBridge.src.DataRepository.Service;
@@ -53,6 +54,15 @@ namespace offlineMeeting.Controllers
             SetViewDataProcess setViewDataProcess = new();
             ViewData["UserData"] = setViewDataProcess.SetUserData(HttpContext, _pleasanterRepository);
             base.OnActionExecuting(context);
+        }
+
+        [HttpGet("Picture/Login/{eventId}")]
+        public IActionResult Login(long eventId)
+        {
+            ManageEventId manageEventId = new(HttpContext);
+            manageEventId.SetEventId(eventId);
+
+            return RedirectToAction("Index");
         }
 
         public IActionResult Index()
