@@ -56,7 +56,7 @@ namespace offlineMeeting.Controllers
             base.OnActionExecuting(context);
         }
 
-        [HttpGet("Picture/Login/{eventId}")]
+        [HttpGet]
         public IActionResult Login(long eventId)
         {
             ManageEventId manageEventId = new(HttpContext);
