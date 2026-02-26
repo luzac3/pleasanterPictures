@@ -1,4 +1,5 @@
-@using offlineMeeting.Models.Entity.Picture
+@using pleasanterPictures.Models.Entity.Picture
+@using pleasanterPictures.Models.ViewModel
 @{
     ViewData["Title"] = "ShowPicture";
 }
@@ -13,7 +14,7 @@
         });
     </script>
 }
-@model offlineMeeting.Models.ViewModel.PictureViewModel
+@model PictureViewModel
 
 <div id="answer_list">
     @if (Model.AnswerEntityList != null)

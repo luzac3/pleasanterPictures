@@ -1,5 +1,4 @@
-
-namespace offlineMeeting.Models.Entity.Share
+namespace pleasanterPictures.Models.Entity.Share
 {
     public class PleasanterApiResponseEntity
     {

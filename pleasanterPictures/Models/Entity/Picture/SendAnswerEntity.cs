@@ -1,9 +1,8 @@
-using offlineMeeting.Models.Entity.Share;
 using PleasanterBridge.src.APIBridge.Entity;
 
-namespace offlineMeeting.Models.Entity.Picture
+namespace pleasanterPictures.Models.Entity.Picture
 {
-    public class SendAnswerEntity : ApiEntity
+    public class SendAnswerEntity
     {
         public string ClassA { get; set; }
         public string ClassB { get; set; }

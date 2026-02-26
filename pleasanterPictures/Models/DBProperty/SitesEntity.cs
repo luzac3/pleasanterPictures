@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 
-namespace offlineMeeting.Models.DBProperty
+namespace pleasanterPictures.Models.DBProperty
 {
     [PrimaryKey(nameof(SiteId))]
     public class SitesEntity

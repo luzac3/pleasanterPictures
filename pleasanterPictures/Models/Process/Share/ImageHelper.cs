@@ -3,7 +3,7 @@ using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Formats.Webp;
 using SixLabors.ImageSharp.Processing;
 
-namespace offlineMeeting.Models.Process.Share
+namespace pleasanterPictures.Models.Process.Share
 {
     public class ImageHelper : IDisposable
     {

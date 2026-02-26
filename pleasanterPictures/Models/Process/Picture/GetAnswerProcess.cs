@@ -1,9 +1,9 @@
-using offlineMeeting.Models.Entity.Picture;
-using offlineMeeting.Models.Share;
 using PleasanterBridge.src.DataRepository.Service;
+using pleasanterPictures.Models.Entity.Picture;
+using pleasanterPictures.Models.Share;
 using System.Data;
 
-namespace offlineMeeting.Models.Process.Picture
+namespace pleasanterPictures.Models.Process.Picture
 {
     public class GetAnswerProcess
     {

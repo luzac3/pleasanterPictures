@@ -1,8 +1,8 @@
-﻿using offlineMeeting.Models.DBProperty;
-using offlineMeeting.Models.Share;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
+using pleasanterPictures.Models.Share;
+using pleasanterPictures.Models.DBProperty;
 
-namespace offlineMeeting.Models.Process.DBProcess
+namespace pleasanterPictures.Models.Process.DBProcess
 {
     public class SitesProcess : DBContext
     {

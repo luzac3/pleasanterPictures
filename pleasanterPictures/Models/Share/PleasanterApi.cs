@@ -1,7 +1,7 @@
-using offlineMeeting.Models.Entity.Share;
+using pleasanterPictures.Models.Entity.Share;
 using System.Text.Json;
 
-namespace offlineMeeting.Models.Share
+namespace pleasanterPictures.Models.Share
 {
     public class PleasanterApi
     {

@@ -1,5 +1,5 @@
-using offlineMeeting.Models.Entity.Picture;
-namespace offlineMeeting.Models.ViewModel
+using pleasanterPictures.Models.Entity.Picture;
+namespace pleasanterPictures.Models.ViewModel
 {
     public class PictureViewModel
     {

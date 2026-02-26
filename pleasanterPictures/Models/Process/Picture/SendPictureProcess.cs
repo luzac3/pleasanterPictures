@@ -1,14 +1,14 @@
 using Microsoft.AspNetCore.SignalR;
-using offlineMeeting.Models.Entity.Login;
-using offlineMeeting.Models.Entity.Picture;
-using offlineMeeting.Models.Share;
 using PleasanterBridge.src.APIBridge;
 using PleasanterBridge.src.APIBridge.Contracts;
 using PleasanterBridge.src.DataRepository.Service;
+using pleasanterPictures.Models.Entity.Picture;
+using pleasanterPictures.Models.Entity.Share;
+using pleasanterPictures.Models.Share;
 using System.Net;
 using System.Text.Json;
 
-namespace offlineMeeting.Models.Process.Picture
+namespace pleasanterPictures.Models.Process.Picture
 {
     public class SendPictureProcess
     {

@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc.ViewEngines;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.Mvc;
 
-namespace offlineMeeting.Models.Share
+namespace pleasanterPictures.Models.Share
 {
     public class ConvertPartialViewToJson
     {
