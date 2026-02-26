@@ -55,6 +55,15 @@ namespace pleasanterPictures.Controllers
             base.OnActionExecuting(context);
         }
 
+        [HttpGet]
+        public IActionResult Login(long eventId)
+        {
+            ManageEventId manageEventId = new(HttpContext);
+            manageEventId.SetEventId(eventId);
+
+            return RedirectToAction("Index");
+        }
+
         public IActionResult Index()
         {
             GetPictureProcess getPictureProcess = new(HttpContext, _pleasanterRepository, PictureSiteId);
