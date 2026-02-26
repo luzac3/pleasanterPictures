@@ -19,15 +19,15 @@ export class SendAnswer {
 
     SendCanvas = async () => {
         const sendElement = document.getElementById('send') as HTMLButtonElement;
-        const canvasElement = document.getElementById('textCanvas') as HTMLCanvasElement;
-        let dataUrl = "";
-        if (!canvasElement) {
-            const pictureOverlay = new PictureOverlay();
-            dataUrl = await pictureOverlay.composeImage();
-        } else {
-            dataUrl = canvasElement.toDataURL("image/png");
-        }
-        sendElement.onclick = () => {
+        sendElement.onclick = async () => {
+            let dataUrl = "";
+            const canvasElement = document.getElementById('textCanvas') as HTMLCanvasElement;
+            if (!canvasElement) {
+                const pictureOverlay = new PictureOverlay();
+                dataUrl = await pictureOverlay.composeImage();
+            } else {
+                dataUrl = canvasElement.toDataURL("image/png");
+            }
             const pictureId = (document.getElementById('picture_id') as HTMLInputElement).value;
             const answerEntity: { [key: string]: string } = {
                 pictureId: pictureId,

@@ -16,7 +16,6 @@ namespace pleasanterPictures.Models.Process.Picture
         private long AnswerSiteId;
         private long EventId;
         private AnswerPostEntity AnswerPostEntity;
-        private HttpContext HttpContext;
 
         public SendAnswerProcess(
             IHubContext<MyHub> hubContext,
@@ -29,23 +28,15 @@ namespace pleasanterPictures.Models.Process.Picture
             _hubContext = hubContext;
             _bridge = bridge;
             ManageEventId manageEventId = new (httpContext);
-            ManageUserCd manageUserCd = new (httpContext);
 
             EventId = manageEventId.GetEventId();
 
             AnswerSiteId = answerSiteId;
             AnswerPostEntity = answerPostEntity;
-            HttpContext = httpContext;
         }
 
         public async Task<string> Send()
         {
-            long userCd = new ManageUserCd(HttpContext).GetUserCd();
-            if (userCd == 0)
-            {
-                return JsonSerializer.Serialize(new Dictionary<string, string> { { "status", "400" }, { "message", "ユーザコードがありません" } });
-            }
-
             string base64Image = string.Empty;
             if (!string.IsNullOrEmpty(AnswerPostEntity.Image))
             {
@@ -59,7 +50,6 @@ namespace pleasanterPictures.Models.Process.Picture
             SendAnswerEntity sendAnswerEntity = new
             (
                 eventNumber: EventId.ToString(),
-                userCd: userCd.ToString(),
                 pictureId: AnswerPostEntity.PictureId != null ? AnswerPostEntity.PictureId.ToString() : string.Empty,
                 base64Image: base64Image
             );

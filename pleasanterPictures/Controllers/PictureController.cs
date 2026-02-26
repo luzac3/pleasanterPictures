@@ -11,6 +11,7 @@ using pleasanterPictures.Models.Entity.Share;
 using pleasanterPictures.Models.JsonDataProperty;
 using pleasanterPictures.Models.Process.Picture;
 using pleasanterPictures.Models.Process.Share;
+using pleasanterPictures.Models.Share;
 using pleasanterPictures.Models.ViewModel;
 using System.Diagnostics;
 
@@ -68,7 +69,17 @@ namespace pleasanterPictures.Controllers
         {
             GetPictureProcess getPictureProcess = new(HttpContext, _pleasanterRepository, PictureSiteId);
             PictureViewModel pictureViewModel = new PictureViewModel();
-            pictureViewModel.setPictureEntity(getPictureProcess.Get());
+            pictureViewModel.setPictureEntityList(getPictureProcess.GetList(PictureSiteId));
+
+            return View(pictureViewModel);
+        }
+
+        [HttpGet("Picture/Detail/{resultId}")]
+        public IActionResult Detail(long resultId)
+        {
+            GetPictureProcess getPictureProcess = new(HttpContext, _pleasanterRepository, PictureSiteId);
+            PictureViewModel pictureViewModel = new PictureViewModel();
+            pictureViewModel.setPictureEntity(getPictureProcess.Get(resultId));
 
             return View(pictureViewModel);
         }

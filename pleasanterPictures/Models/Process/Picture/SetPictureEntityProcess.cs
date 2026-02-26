@@ -2,6 +2,7 @@ using PleasanterBridge.src.DataRepository.Entity;
 using PleasanterBridge.src.DataRepository.Service;
 using pleasanterPictures.Models.Entity.Picture;
 using pleasanterPictures.Models.Process.Share;
+using pleasanterPictures.Models.ViewModel;
 
 namespace pleasanterPictures.Models.Process.Picture
 {
@@ -88,9 +89,9 @@ namespace pleasanterPictures.Models.Process.Picture
 
         public List<PictureEntity> GetList(long pictureSiteId)
         {
-            List<PictureEntity> pictureEntityList = new List<PictureEntity> { };
+            var where = new Dictionary<string, object>();
 
-            List<TablesEntity> tablesEntities = _repository.Select(pictureSiteId, true);
+            List<TablesEntity> tablesEntities = _repository.Select(pictureSiteId, where, true);
 
             return tablesEntities.Select(tablesEntity =>
             {

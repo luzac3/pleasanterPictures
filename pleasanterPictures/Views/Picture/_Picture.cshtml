@@ -8,19 +8,10 @@
         <input id="picture_id" type="text" class="nodisplay" value="@(Model.PictureEntity?.ResultId)" />
         <p>@(Model.PictureEntity?.Picture)</p>
 
-        @if (@Model.PictureEntity?.PictureImage != "")
-        {
-            <div>
-                <a href="@(Model.PictureEntity?.PictureImage)" class="picture_image_wrapper js-smartPhoto" data-caption="test" data-id="test" data-group="picture">
-                    <img src="@(Model.PictureEntity?.PictureImage)" class="picture_image" />
-                </a>
-            </div>
-        }
-
         @if (@Model.PictureEntity?.PictureImageOverlay != "")
         {
             <div class="picture_canvas_wrapper">
-                <div class="picture_canvas_container" style="width: auto; display: inline-block;">
+                <div class="picture_canvas_container" style="width: auto; display: inline-block; position: relative;">
                     <img 
                         id="picture_image_overlay" 
                          src="@(Model.PictureEntity?.PictureImageOverlay)"
@@ -32,7 +23,25 @@
                     <canvas 
                         id="picture_canvas_overlay" 
                         class="picture_canvas_overlay"
-                        style="position: absolute; top: 0; left: 0; cursor: crosshair; display: none;"
+                        style="position: absolute; top: 0; left: 0; cursor: crosshair;"
+                    ></canvas>
+                </div>
+            </div>
+        }
+        else if (@Model.PictureEntity?.PictureImage != "")
+        {
+            <div class="picture_canvas_wrapper">
+                <div class="picture_canvas_container" style="width: auto; display: inline-block; position: relative;">
+                    <img 
+                        id="picture_image_overlay" 
+                        src="@(Model.PictureEntity?.PictureImage)"
+                        class="picture_image_overlay"
+                        style="max-width: 100%; height: auto; display: block;"
+                    />
+                    <canvas 
+                        id="picture_canvas_overlay" 
+                        class="picture_canvas_overlay"
+                        style="position: absolute; top: 0; left: 0; cursor: crosshair;"
                     ></canvas>
                 </div>
             </div>
