@@ -1,4 +1,5 @@
-@model offlineMeeting.Models.ViewModel.PictureViewModel
+@using pleasanterPictures.Models.ViewModel
+@model PictureViewModel
 
 @{
     ViewData["Title"] = "Picture";
@@ -17,31 +18,44 @@
 <div id="picture">
     <partial name="/Views/Picture/_Picture.cshtml" />
 </div>
-<div id ="answer_container">
-    @if (@Model.PictureEntity?.PictureImageOverlay != "")
-    {
-        <div class="color-palette">
-            <div class="color-palette-label">線の色：</div>
-            <div class="color-palette-colors">
-                <button class="color-button" data-color="#000000" style="background-color: #000000;" title="黒"></button>
-                <button class="color-button" data-color="#FFFFFF" style="background-color: #FFFFFF; border: 1px solid #ccc;" title="白"></button>
-                <button class="color-button" data-color="#FF0000" style="background-color: #FF0000;" title="赤"></button>
-                <button class="color-button" data-color="#00FF00" style="background-color: #00FF00;" title="緑"></button>
-                <button class="color-button" data-color="#0000FF" style="background-color: #0000FF;" title="青"></button>
-                <button class="color-button" data-color="#FFFF00" style="background-color: #FFFF00;" title="黄"></button>
-                <button class="color-button" data-color="#FF00FF" style="background-color: #FF00FF;" title="マゼンタ"></button>
-                <button class="color-button" data-color="#00FFFF" style="background-color: #00FFFF;" title="シアン"></button>
-                <button class="color-button" data-color="#FFA500" style="background-color: #FFA500;" title="オレンジ"></button>
-                <button class="color-button" data-color="#800080" style="background-color: #800080;" title="紫"></button>
-                <button class="color-button" data-color="#FFC0CB" style="background-color: #FFC0CB;" title="ピンク"></button>
-                <button class="color-button" data-color="#808080" style="background-color: #808080;" title="グレー"></button>
+<div id="answer_container">
+    <div class="drawing-tools">
+        <div class="tools-section">
+            <div class="tool-buttons">
+                <button id="tool-pen" class="tool-button active" title="鉛筆">
+                    <span class="material-symbols-outlined">edit</span>
+                </button>
+                <button id="tool-eraser" class="tool-button" title="消しゴム">
+                    <span class="material-symbols-outlined">cleaning_services</span>
+                </button>
             </div>
         </div>
-    }
-    else
-    {
-        <canvas id="textCanvas"></canvas>
-    }
+
+        @if (@Model.PictureEntity?.PictureImageOverlay != "")
+        {
+            <div class="color-palette">
+                <div class="color-palette-label">線の色：</div>
+                <div class="color-palette-colors">
+                    <button class="color-button" data-color="#000000" style="background-color: #000000;" title="黒"></button>
+                    <button class="color-button" data-color="#FFFFFF" style="background-color: #FFFFFF; border: 1px solid #ccc;" title="白"></button>
+                    <button class="color-button" data-color="#FF0000" style="background-color: #FF0000;" title="赤"></button>
+                    <button class="color-button" data-color="#00FF00" style="background-color: #00FF00;" title="緑"></button>
+                    <button class="color-button" data-color="#0000FF" style="background-color: #0000FF;" title="青"></button>
+                    <button class="color-button" data-color="#FFFF00" style="background-color: #FFFF00;" title="黄"></button>
+                    <button class="color-button" data-color="#FF00FF" style="background-color: #FF00FF;" title="マゼンタ"></button>
+                    <button class="color-button" data-color="#00FFFF" style="background-color: #00FFFF;" title="シアン"></button>
+                    <button class="color-button" data-color="#FFA500" style="background-color: #FFA500;" title="オレンジ"></button>
+                    <button class="color-button" data-color="#800080" style="background-color: #800080;" title="紫"></button>
+                    <button class="color-button" data-color="#FFC0CB" style="background-color: #FFC0CB;" title="ピンク"></button>
+                    <button class="color-button" data-color="#808080" style="background-color: #808080;" title="グレー"></button>
+                </div>
+            </div>
+        }
+        else
+        {
+            <canvas id="textCanvas"></canvas>
+        }
+    </div>
     <div class="picture-buttons">
         <button id="clear">クリア</button>
         <button id="send" @(Model.PictureEntity != null ? "" : "disabled")>確定</button>

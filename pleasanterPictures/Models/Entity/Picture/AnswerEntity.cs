@@ -1,6 +1,4 @@
-using System.Drawing;
-
-namespace offlineMeeting.Models.Entity.Picture
+namespace pleasanterPictures.Models.Entity.Picture
 {
     public class AnswerEntity
     {

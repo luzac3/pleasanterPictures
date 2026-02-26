@@ -1,4 +1,4 @@
-﻿namespace offlineMeeting.Models.Process.Share
+﻿namespace pleasanterPictures.Models.Process.Share
 {
     public class ChangeStringListToInt
     {

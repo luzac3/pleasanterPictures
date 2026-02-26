@@ -1,4 +1,4 @@
-﻿namespace offlineMeeting.Models.Entity.Share
+﻿namespace pleasanterPictures.Models.Entity.Share
 {
     public static class EnvironmentEntity
     {

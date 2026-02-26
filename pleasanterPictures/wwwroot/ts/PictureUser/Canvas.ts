@@ -6,6 +6,8 @@ export class Canvas {
     private lastX: number = 0;
     private lastY: number = 0;
     private drawColor: string = "#333";
+    private isEraser: boolean = false;
+    private dpr: number = 1;
 
     constructor () {
         this.CanvasElement = document.getElementById('textCanvas') as HTMLCanvasElement;
@@ -17,11 +19,14 @@ export class Canvas {
         }
 
         this.ClearButtonElement = document.getElementById('clear') as HTMLButtonElement;
+        this.dpr = window.devicePixelRatio || 1;
         this.SetCanvasSizeForDpi();
         this.Ctx = this.CanvasElement.getContext('2d')!;
         this.SetCanvas();
         this.ActivateCanvas();
+        this.SetToolButtons();
         this.SetColorPalette();
+        this.AdjustToolbarSize();
         this.SetDrawingPc();
         this.SetDrawingPhone();
 
@@ -29,6 +34,7 @@ export class Canvas {
         window.addEventListener('resize', () => {
             this.SetCanvasSizeForDpi();
             this.ActivateCanvas();
+            this.AdjustToolbarSize();
         });
     }
 
@@ -43,12 +49,46 @@ export class Canvas {
     }
 
     private SetCanvasSizeForDpi = () => {
-        const dpr = window.devicePixelRatio || 1;
         const rect = this.CanvasElement.getBoundingClientRect();
-        this.CanvasElement.width = rect.width * dpr;
-        this.CanvasElement.height = rect.height * dpr;
+        this.CanvasElement.width = rect.width * this.dpr;
+        this.CanvasElement.height = rect.height * this.dpr;
         this.CanvasElement.style.width = rect.width + "px";
         this.CanvasElement.style.height = rect.height + "px";
+    }
+
+    private AdjustToolbarSize = () => {
+        const drawingTools = document.querySelector('.drawing-tools');
+        if (!drawingTools) return;
+
+        const containerWidth = (drawingTools.parentElement?.offsetWidth || 300);
+        const toolButtonSize = Math.max(32, Math.min(48, containerWidth * 0.08));
+        const colorButtonSize = Math.max(24, Math.min(36, containerWidth * 0.06));
+        const gap = Math.max(4, Math.min(10, containerWidth * 0.02));
+
+        document.documentElement.style.setProperty('--tool-button-size', `${toolButtonSize}px`);
+        document.documentElement.style.setProperty('--color-button-size', `${colorButtonSize}px`);
+        document.documentElement.style.setProperty('--gap-size', `${gap}px`);
+    }
+
+    private SetToolButtons = () => {
+        const penButton = document.getElementById('tool-pen');
+        const eraserButton = document.getElementById('tool-eraser');
+
+        if (penButton) {
+            penButton.addEventListener('click', () => {
+                this.isEraser = false;
+                penButton.classList.add('active');
+                eraserButton?.classList.remove('active');
+            });
+        }
+
+        if (eraserButton) {
+            eraserButton.addEventListener('click', () => {
+                this.isEraser = true;
+                eraserButton.classList.add('active');
+                penButton?.classList.remove('active');
+            });
+        }
     }
 
     private SetColorPalette = () => {
@@ -74,30 +114,34 @@ export class Canvas {
         this.CanvasElement.addEventListener('mousedown', (e) => {
             this.isDrawing = true;
             const rect = this.CanvasElement.getBoundingClientRect();
-            const dpr = window.devicePixelRatio || 1;
-            this.lastX = (e.clientX - rect.left) * dpr;
-            this.lastY = (e.clientY - rect.top) * dpr;
+            this.lastX = (e.clientX - rect.left) * this.dpr;
+            this.lastY = (e.clientY - rect.top) * this.dpr;
         });
 
         this.CanvasElement.addEventListener('mousemove', (e) => {
             if (!this.isDrawing) return;
             const rect = this.CanvasElement.getBoundingClientRect();
-            const dpr = window.devicePixelRatio || 1;
-            const x = (e.clientX - rect.left) * dpr;
-            const y = (e.clientY - rect.top) * dpr;
-            if (this.lastX === x && this.lastY === y) {
-                this.Ctx.beginPath();
-                this.Ctx.arc(x, y, 1 * dpr, 0, Math.PI * 2);
-                this.Ctx.fillStyle = this.drawColor;
-                this.Ctx.fill();
+            const x = (e.clientX - rect.left) * this.dpr;
+            const y = (e.clientY - rect.top) * this.dpr;
+            
+            if (this.isEraser) {
+                const eraserSize = 16 * this.dpr;
+                this.Ctx.clearRect(x - eraserSize / 2, y - eraserSize / 2, eraserSize, eraserSize);
             } else {
-                this.Ctx.beginPath();
-                this.Ctx.moveTo(this.lastX, this.lastY);
-                this.Ctx.lineTo(x, y);
-                this.Ctx.strokeStyle = this.drawColor;
-                this.Ctx.lineWidth = 2 * dpr;
-                this.Ctx.lineCap = "round";
-                this.Ctx.stroke();
+                if (this.lastX === x && this.lastY === y) {
+                    this.Ctx.beginPath();
+                    this.Ctx.arc(x, y, 1 * this.dpr, 0, Math.PI * 2);
+                    this.Ctx.fillStyle = this.drawColor;
+                    this.Ctx.fill();
+                } else {
+                    this.Ctx.beginPath();
+                    this.Ctx.moveTo(this.lastX, this.lastY);
+                    this.Ctx.lineTo(x, y);
+                    this.Ctx.strokeStyle = this.drawColor;
+                    this.Ctx.lineWidth = 2 * this.dpr;
+                    this.Ctx.lineCap = "round";
+                    this.Ctx.stroke();
+                }
             }
             this.lastX = x;
             this.lastY = y;
@@ -117,33 +161,37 @@ export class Canvas {
             e.preventDefault();
             this.isDrawing = true;
             const rect = this.CanvasElement.getBoundingClientRect();
-            const dpr = window.devicePixelRatio || 1;
             const touch = e.touches[0];
-            this.lastX = (touch.clientX - rect.left) * dpr;
-            this.lastY = (touch.clientY - rect.top) * dpr;
+            this.lastX = (touch.clientX - rect.left) * this.dpr;
+            this.lastY = (touch.clientY - rect.top) * this.dpr;
         }, { passive: false });
 
         this.CanvasElement.addEventListener('touchmove', (e) => {
             if (!this.isDrawing) return;
             e.preventDefault();
             const rect = this.CanvasElement.getBoundingClientRect();
-            const dpr = window.devicePixelRatio || 1;
             const touch = e.touches[0];
-            const x = (touch.clientX - rect.left) * dpr;
-            const y = (touch.clientY - rect.top) * dpr;
-            if (this.lastX === x && this.lastY === y) {
-                this.Ctx.beginPath();
-                this.Ctx.arc(x, y, 1 * dpr, 0, Math.PI * 2);
-                this.Ctx.fillStyle = this.drawColor;
-                this.Ctx.fill();
+            const x = (touch.clientX - rect.left) * this.dpr;
+            const y = (touch.clientY - rect.top) * this.dpr;
+            
+            if (this.isEraser) {
+                const eraserSize = 16 * this.dpr;
+                this.Ctx.clearRect(x - eraserSize / 2, y - eraserSize / 2, eraserSize, eraserSize);
             } else {
-                this.Ctx.beginPath();
-                this.Ctx.moveTo(this.lastX, this.lastY);
-                this.Ctx.lineTo(x, y);
-                this.Ctx.strokeStyle = this.drawColor;
-                this.Ctx.lineWidth = 2 * dpr;
-                this.Ctx.lineCap = "round";
-                this.Ctx.stroke();
+                if (this.lastX === x && this.lastY === y) {
+                    this.Ctx.beginPath();
+                    this.Ctx.arc(x, y, 1 * this.dpr, 0, Math.PI * 2);
+                    this.Ctx.fillStyle = this.drawColor;
+                    this.Ctx.fill();
+                } else {
+                    this.Ctx.beginPath();
+                    this.Ctx.moveTo(this.lastX, this.lastY);
+                    this.Ctx.lineTo(x, y);
+                    this.Ctx.strokeStyle = this.drawColor;
+                    this.Ctx.lineWidth = 2 * this.dpr;
+                    this.Ctx.lineCap = "round";
+                    this.Ctx.stroke();
+                }
             }
             this.lastX = x;
             this.lastY = y;

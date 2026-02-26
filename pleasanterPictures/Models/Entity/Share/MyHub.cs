@@ -1,7 +1,7 @@
 
 using Microsoft.AspNetCore.SignalR;
 
-namespace offlineMeeting.Models.Entity.Login
+namespace pleasanterPictures.Models.Entity.Share
 {
     public class MyHub : Hub
     {

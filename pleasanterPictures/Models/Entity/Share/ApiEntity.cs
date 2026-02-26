@@ -1,6 +1,6 @@
-﻿using offlineMeeting.Models.JsonDataProperty;
+﻿using pleasanterPictures.Models.JsonDataProperty;
 
-namespace offlineMeeting.Models.Entity.Share
+namespace pleasanterPictures.Models.Entity.Share
 {
     public class ApiEntity : ApiKeyProperty
     {

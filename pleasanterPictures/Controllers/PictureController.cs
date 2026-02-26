@@ -3,18 +3,18 @@ using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.ViewEngines;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.SignalR;
-using offlineMeeting.Models;
-using offlineMeeting.Models.Entity.Login;
-using offlineMeeting.Models.Entity.Picture;
-using offlineMeeting.Models.JsonDataProperty;
-using offlineMeeting.Models.Process.Picture;
-using offlineMeeting.Models.Process.Share;
-using offlineMeeting.Models.ViewModel;
 using PleasanterBridge.src.APIBridge;
 using PleasanterBridge.src.DataRepository.Service;
+using pleasanterPictures.Models;
+using pleasanterPictures.Models.Entity.Picture;
+using pleasanterPictures.Models.Entity.Share;
+using pleasanterPictures.Models.JsonDataProperty;
+using pleasanterPictures.Models.Process.Picture;
+using pleasanterPictures.Models.Process.Share;
+using pleasanterPictures.Models.ViewModel;
 using System.Diagnostics;
 
-namespace offlineMeeting.Controllers
+namespace pleasanterPictures.Controllers
 {
     public class PictureController : Controller
     {

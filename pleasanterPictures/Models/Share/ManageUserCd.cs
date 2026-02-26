@@ -2,7 +2,7 @@
 using System.Data;
 using System.Text.Json;
 
-namespace offlineMeeting.Models.Share
+namespace pleasanterPictures.Models.Share
 {
     public class ManageUserCd
     {

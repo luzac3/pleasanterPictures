@@ -1,6 +1,6 @@
 ﻿using System.Text;
 
-namespace offlineMeeting.Models.Share
+namespace pleasanterPictures.Models.Share
 {
     public class ReadJson
     {

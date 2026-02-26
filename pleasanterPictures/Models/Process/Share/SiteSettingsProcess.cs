@@ -1,6 +1,6 @@
-using offlineMeeting.Models.Process.DBProcess;
+using pleasanterPictures.Models.Process.DBProcess;
 
-namespace offlineMeeting.Models.Process.Share
+namespace pleasanterPictures.Models.Process.Share
 {
     public class SiteSettingsProcess : SitesProcess
     {
