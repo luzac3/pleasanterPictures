@@ -158,7 +158,7 @@ namespace pleasanterPictures.Controllers
             );
             string result = await sendAnswerProcess.Send();
 
-            return Json(result.ToString());
+            return Content(result, "application/json");
         }
 
         [HttpPost]
