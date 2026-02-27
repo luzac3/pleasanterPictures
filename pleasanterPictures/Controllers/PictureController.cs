@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc.ViewEngines;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.SignalR;
 using PleasanterBridge.src.APIBridge;
+using PleasanterBridge.src.DataRepository.Entity;
 using PleasanterBridge.src.DataRepository.Service;
 using pleasanterPictures.Models;
 using pleasanterPictures.Models.Entity.Picture;
@@ -181,49 +182,17 @@ namespace pleasanterPictures.Controllers
         {
             try
             {
-                var pictureProcess = new SetPictureEntityProcess(_pleasanterRepository, PictureSiteId, 0);
-                var picture = pictureProcess.Get(resultId);
+                GetPictureProcess getPictureProcess = new(HttpContext, _pleasanterRepository, PictureSiteId);
+                var imageResult = getPictureProcess.GetImageBytes(resultId, type);
 
-                if (picture == null)
+                if (imageResult == null)
                     return NotFound();
 
-                // 対応するデータベース行を取得
-                TablesEntity? tablesEntity = _pleasanterRepository.Select(resultId, true).FirstOrDefault();
-                if (tablesEntity == null)
-                    return NotFound();
-
-                string? imageBase64 = type switch
-                {
-                    "overlay" => tablesEntity.DescriptionE?[0],  // ImageSharp を通さない
-                    _ => tablesEntity.DescriptionC?[0]  // 通常画像（ImageSharp を通す）
-                };
-
-                if (string.IsNullOrEmpty(imageBase64))
-                    return NotFound();
-
-                // Base64 をデコード
-                byte[] imageBytes;
-                try
-                {
-                    imageBytes = Convert.FromBase64String(imageBase64);
-                }
-                catch
-                {
-                    return BadRequest("Invalid image data");
-                }
-
-                // Overlay 画像は ImageSharp を通さずにそのまま返す
-                if (type == "overlay")
-                {
-                    return File(imageBytes, "image/jpeg");
-                }
-
-                // 通常画像は ImageSharp で処理（品質調整など）
-                using (var imageHelper = new ImageHelper(imageBytes))
-                {
-                    var processedBytes = imageHelper.GetLowQualityBytes();
-                    return File(processedBytes, "image/webp");
-                }
+                return File(imageResult.Value.bytes, imageResult.Value.contentType, imageResult.Value.fileName);
+            }
+            catch (FormatException)
+            {
+                return BadRequest("Invalid image data");
             }
             catch (Exception ex)
             {

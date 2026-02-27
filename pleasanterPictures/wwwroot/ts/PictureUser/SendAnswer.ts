@@ -1,6 +1,12 @@
 import { FetchApi } from "@root/share/FetchApi"
 import { PictureOverlay } from "./PictureOverlay";
 
+interface SendAnswerResponse {
+    status: string;
+    message: string;
+    ResultId: string;
+}
+
 export class SendAnswer {
     private url: string;
     private method: string;
@@ -33,15 +39,14 @@ export class SendAnswer {
                 pictureId: pictureId,
                 image: dataUrl
             };
-            this.Send(answerEntity).then((data: string) => {
-                const result = JSON.parse(data);
+            this.Send(answerEntity).then((data) => {
                 sendElement.disabled = true;
-                window.alert(result.message);
+                window.alert(data.message);
             });
         };
     }
 
-    private Send = async (answerEntity: { [key: string]: string }) => {
+    private Send = async (answerEntity: { [key: string]: string }): Promise<SendAnswerResponse> => {
         const fetchApi = new FetchApi();
         return await fetchApi.send(
             this.url,
@@ -49,7 +54,7 @@ export class SendAnswer {
             this.headers,
             answerEntity,
             this.responseKind
-        ).then(async (data: string) => {
+        ).then((data: SendAnswerResponse) => {
             return data;
         }).catch(e => {
             throw e;

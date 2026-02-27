@@ -38,6 +38,38 @@ namespace pleasanterPictures.Models.Process.Picture
             return SetPictureEntity(tablesEntity)!;
         }
 
+        public (byte[] bytes, string contentType, string fileName)? GetImageBytes(long resultId, string type)
+        {
+            TablesEntity? tablesEntity = _repository.Select(resultId, true).FirstOrDefault();
+            if (tablesEntity == null)
+                return null;
+
+            string? imageBase64 = GetBase64FromEntity(tablesEntity, type);
+            if (string.IsNullOrEmpty(imageBase64))
+                return null;
+
+            byte[] imageBytes = Convert.FromBase64String(imageBase64);
+
+            // Overlay ‰æ‘œ‚Í ImageSharp ‚ð’Ê‚³‚¸‚É‚»‚Ì‚Ü‚Ü•Ô‚·
+            if (type == "overlay")
+            {
+                return (imageBytes, "image/jpeg", $"image_{resultId}.jpg");
+            }
+
+            // ’Êí‰æ‘œ‚Í ImageSharp ‚Å•iŽ¿’²®
+            using var imageHelper = new ImageHelper(imageBytes);
+            return (imageHelper.GetLowQualityBytes(), "image/webp", $"image_{resultId}.webp");
+        }
+
+        private static string? GetBase64FromEntity(TablesEntity tablesEntity, string type)
+        {
+            return type switch
+            {
+                "overlay" => tablesEntity.DescriptionE?[0],
+                _ => tablesEntity.DescriptionC?[0]
+            };
+        }
+
         private PictureEntity? SetPictureEntity(TablesEntity? tablesEntity)
         {
             if (tablesEntity == null)
@@ -72,8 +104,8 @@ namespace pleasanterPictures.Models.Process.Picture
                     resultId: tablesEntity.ReferenceId.ToString(),
                     eventId: EventId.ToString(),
                     picture: tablesEntity.DescriptionA != null && tablesEntity.DescriptionA.Count > 0 ? tablesEntity.DescriptionA[0] : "",
-                    pictureImage: !string.IsNullOrEmpty(pictureImageBase64) ? tablesEntity.ReferenceId.ToString() : "", // ‰æ‘œID‚ðŠi”[
-                    pictureImageOverlay: !string.IsNullOrEmpty(imageOverlayBase64) ? tablesEntity.ReferenceId.ToString() : "", // ‰æ‘œID‚ðŠi”[
+                    pictureImage: !string.IsNullOrEmpty(pictureImageBase64) ? tablesEntity.ReferenceId.ToString() : "",
+                    pictureImageOverlay: !string.IsNullOrEmpty(imageOverlayBase64) ? tablesEntity.ReferenceId.ToString() : "",
                     pictureImageOverlayWidth: overlayImageWidth,
                     pictureImageOverlayHeight: overlayImageHeight,
                     hint: tablesEntity.DescriptionD != null && tablesEntity.DescriptionD.Count > 0 ? tablesEntity.DescriptionD[0] : "",

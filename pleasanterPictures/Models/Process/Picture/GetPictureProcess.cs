@@ -31,6 +31,11 @@ namespace pleasanterPictures.Models.Process.Picture
             return SetPictureEntityProcess.Get(resultId);
         }
 
+        public (byte[] bytes, string contentType, string fileName)? GetImageBytes(long resultId, string type)
+        {
+            return SetPictureEntityProcess.GetImageBytes(resultId, type);
+        }
+
         public List<PictureEntity> GetList(long pictureSiteId)
         {
             return SetPictureEntityProcess.GetList(pictureSiteId);

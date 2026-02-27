@@ -15,10 +15,12 @@
         <input id="picture_id" type="text" class="nodisplay" value="@(Model.PictureEntity?.ResultId)" />
         <p>@(Model.PictureEntity?.Picture)</p>
 
-        @if (Model.PictureEntity?.PictureImage != "")
+        @if (!string.IsNullOrEmpty(Model.PictureEntity?.PictureImage))
         {
             <div>
-                <img src="@(Model.PictureEntity?.PictureImage)" class="picture_image" />
+                <img src="@Url.Action("GetImage", "Picture", new { resultId = Model.PictureEntity?.ResultId, type = "main" })" 
+                     class="picture_image"
+                     style="max-width: 100%; height: auto;" />
             </div>
         }
     }
@@ -27,7 +29,7 @@
     <div class="drawing-tools">
         <div class="tools-section">
             <div class="tool-buttons">
-                <button id="tool-pen" class="tool-button active" title="鉛筆">
+                <button id="tool-pen" class="tool-button active" title="ペン">
                     <span class="material-symbols-outlined">edit</span>
                 </button>
                 <button id="tool-eraser" class="tool-button" title="消しゴム">
@@ -36,7 +38,7 @@
             </div>
         </div>
 
-        @if (Model.PictureEntity?.PictureImageOverlay != "")
+        @if (!string.IsNullOrEmpty(Model.PictureEntity?.PictureImageOverlay))
         {
             <div class="color-palette">
                 <div class="color-palette-label">線の色：</div>
@@ -60,7 +62,7 @@
                 <div class="picture_canvas_container" style="width: auto; display: inline-block; position: relative;">
                     <img
                         id="picture_image_overlay"
-                        src="@(Model.PictureEntity!.PictureImageOverlay!)"
+                        src="@Url.Action("GetImage", "Picture", new { resultId = Model.PictureEntity?.ResultId, type = "overlay" })"
                         class="picture_image_overlay"
                         data-width="@(Model.PictureEntity?.PictureImageOverlayWidth)"
                         data-height="@(Model.PictureEntity?.PictureImageOverlayHeight)"
@@ -78,7 +80,6 @@
         {
             <canvas id="textCanvas"></canvas>
         }
-    </div>
     <div class="picture-buttons">
         <button id="clear">クリア</button>
         <button id="send" @(Model.PictureEntity != null ? "" : "disabled")>確定</button>
