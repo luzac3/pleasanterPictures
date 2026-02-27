@@ -176,6 +176,62 @@ namespace pleasanterPictures.Controllers
             return Json(result.ToString());
         }
 
+        [HttpGet("Picture/Image/{resultId}")]
+        public IActionResult GetImage(long resultId, [FromQuery] string type = "main")
+        {
+            try
+            {
+                var pictureProcess = new SetPictureEntityProcess(_pleasanterRepository, PictureSiteId, 0);
+                var picture = pictureProcess.Get(resultId);
+
+                if (picture == null)
+                    return NotFound();
+
+                // 対応するデータベース行を取得
+                TablesEntity? tablesEntity = _pleasanterRepository.Select(resultId, true).FirstOrDefault();
+                if (tablesEntity == null)
+                    return NotFound();
+
+                string? imageBase64 = type switch
+                {
+                    "overlay" => tablesEntity.DescriptionE?[0],  // ImageSharp を通さない
+                    _ => tablesEntity.DescriptionC?[0]  // 通常画像（ImageSharp を通す）
+                };
+
+                if (string.IsNullOrEmpty(imageBase64))
+                    return NotFound();
+
+                // Base64 をデコード
+                byte[] imageBytes;
+                try
+                {
+                    imageBytes = Convert.FromBase64String(imageBase64);
+                }
+                catch
+                {
+                    return BadRequest("Invalid image data");
+                }
+
+                // Overlay 画像は ImageSharp を通さずにそのまま返す
+                if (type == "overlay")
+                {
+                    return File(imageBytes, "image/jpeg");
+                }
+
+                // 通常画像は ImageSharp で処理（品質調整など）
+                using (var imageHelper = new ImageHelper(imageBytes))
+                {
+                    var processedBytes = imageHelper.GetLowQualityBytes();
+                    return File(processedBytes, "image/webp");
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error in GetImage");
+                return StatusCode(500, "Error retrieving image");
+            }
+        }
+
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()
         {
