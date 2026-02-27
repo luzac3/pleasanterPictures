@@ -3,18 +3,13 @@ export class PictureOverlay {
     private overlayCanvas: HTMLCanvasElement | null = null;
     private originalWidth: number = 0;
     private originalHeight: number = 0;
-    private displayWidth: number = 0;
-    private displayHeight: number = 0;
 
     constructor() {
         this.overlayImage = document.getElementById('picture_image_overlay') as HTMLImageElement;
         this.overlayCanvas = document.getElementById('picture_canvas_overlay') as HTMLCanvasElement;
         this.originalWidth = parseInt(this.overlayImage.dataset.width || '1475', 10);
         this.originalHeight = parseInt(this.overlayImage.dataset.height || '1258', 10);
-        this.displayWidth = this.overlayImage.offsetWidth;
-        this.displayHeight = this.overlayImage.offsetHeight;
     }
-
 
     public async composeImage(): Promise<string> {
 
@@ -38,13 +33,13 @@ export class PictureOverlay {
             img.onload = () => {
                 compositeCtx.drawImage(img, 0, 0, this.originalWidth, this.originalHeight);
 
-                const scaleX = this.originalWidth / this.displayWidth;
-                const scaleY = this.originalHeight / this.displayHeight;
-
-                compositeCtx.save();
-                compositeCtx.scale(scaleX, scaleY);
-                compositeCtx.drawImage(this.overlayCanvas!, 0, 0);
-                compositeCtx.restore();
+                // キャンバスの内部ピクセルサイズから原寸へ直接マッピング
+                // （DPR スケーリング込みの解像度をそのまま使う）
+                compositeCtx.drawImage(
+                    this.overlayCanvas!,
+                    0, 0, this.overlayCanvas!.width, this.overlayCanvas!.height,
+                    0, 0, this.originalWidth, this.originalHeight
+                );
 
                 const dataUri = compositeCanvas.toDataURL('image/png');
                 resolve(dataUri);

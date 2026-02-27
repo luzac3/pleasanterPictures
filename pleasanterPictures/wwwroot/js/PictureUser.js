@@ -3947,6 +3947,25 @@ class Canvas {
                 return;
             this.Ctx.clearRect(0, 0, this.CanvasElement.width, this.CanvasElement.height);
         };
+        this.HandleResize = () => {
+            if (!this.Ctx)
+                return;
+            // 現在の描画内容を退避
+            const prevWidth = this.CanvasElement.width;
+            const prevHeight = this.CanvasElement.height;
+            const savedImage = this.Ctx.getImageData(0, 0, prevWidth, prevHeight);
+            // DPR更新（ズーム操作対応）
+            this.dpr = window.devicePixelRatio || 1;
+            // キャンバスサイズ再設定（内容はクリアされる）
+            this.SetCanvasSizeForDpi();
+            // 退避した描画内容を新しいサイズに合わせて復元
+            const tempCanvas = document.createElement('canvas');
+            tempCanvas.width = prevWidth;
+            tempCanvas.height = prevHeight;
+            const tempCtx = tempCanvas.getContext('2d');
+            tempCtx.putImageData(savedImage, 0, 0);
+            this.Ctx.drawImage(tempCanvas, 0, 0, prevWidth, prevHeight, 0, 0, this.CanvasElement.width, this.CanvasElement.height);
+        };
         this.SetCanvasSizeForDpi = () => {
             let width;
             let height;
@@ -4142,10 +4161,9 @@ class Canvas {
         else {
             this.InitCanvas();
         }
-        // ウィンドウリサイズ時にCanvasサイズを再設定
+        // ウィンドウリサイズ時にCanvasサイズを再設定（描画を保持）
         window.addEventListener('resize', () => {
-            this.SetCanvasSizeForDpi();
-            this.ActivateCanvas();
+            this.HandleResize();
             this.AdjustToolbarSize();
         });
     }
@@ -4212,14 +4230,10 @@ class PictureOverlay {
         this.overlayCanvas = null;
         this.originalWidth = 0;
         this.originalHeight = 0;
-        this.displayWidth = 0;
-        this.displayHeight = 0;
         this.overlayImage = document.getElementById('picture_image_overlay');
         this.overlayCanvas = document.getElementById('picture_canvas_overlay');
         this.originalWidth = parseInt(this.overlayImage.dataset.width || '1475', 10);
         this.originalHeight = parseInt(this.overlayImage.dataset.height || '1258', 10);
-        this.displayWidth = this.overlayImage.offsetWidth;
-        this.displayHeight = this.overlayImage.offsetHeight;
     }
     async composeImage() {
         if (!this.overlayImage || !this.overlayCanvas) {
@@ -4237,12 +4251,9 @@ class PictureOverlay {
         return new Promise((resolve, reject) => {
             img.onload = () => {
                 compositeCtx.drawImage(img, 0, 0, this.originalWidth, this.originalHeight);
-                const scaleX = this.originalWidth / this.displayWidth;
-                const scaleY = this.originalHeight / this.displayHeight;
-                compositeCtx.save();
-                compositeCtx.scale(scaleX, scaleY);
-                compositeCtx.drawImage(this.overlayCanvas, 0, 0);
-                compositeCtx.restore();
+                // �L�����o�X�̓����s�N�Z���T�C�Y���猴���֒��ڃ}�b�s���O
+                // �iDPR �X�P�[�����O���݂̉𑜓x�����̂܂܎g���j
+                compositeCtx.drawImage(this.overlayCanvas, 0, 0, this.overlayCanvas.width, this.overlayCanvas.height, 0, 0, this.originalWidth, this.originalHeight);
                 const dataUri = compositeCanvas.toDataURL('image/png');
                 resolve(dataUri);
             };
