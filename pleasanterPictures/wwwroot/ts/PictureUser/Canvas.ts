@@ -44,10 +44,9 @@ export class Canvas {
             this.InitCanvas();
         }
 
-        // ウィンドウリサイズ時にCanvasサイズを再設定
+        // ウィンドウリサイズ時にCanvasサイズを再設定（描画を保持）
         window.addEventListener('resize', () => {
-            this.SetCanvasSizeForDpi();
-            this.ActivateCanvas();
+            this.HandleResize();
             this.AdjustToolbarSize();
         });
     }
@@ -100,6 +99,34 @@ export class Canvas {
     private ActivateCanvas = () => {
         if (!this.Ctx) return;
         this.Ctx.clearRect(0, 0, this.CanvasElement.width, this.CanvasElement.height);
+    }
+
+    private HandleResize = () => {
+        if (!this.Ctx) return;
+
+        // 現在の描画内容を退避
+        const prevWidth = this.CanvasElement.width;
+        const prevHeight = this.CanvasElement.height;
+        const savedImage = this.Ctx.getImageData(0, 0, prevWidth, prevHeight);
+
+        // DPR更新（ズーム操作対応）
+        this.dpr = window.devicePixelRatio || 1;
+
+        // キャンバスサイズ再設定（内容はクリアされる）
+        this.SetCanvasSizeForDpi();
+
+        // 退避した描画内容を新しいサイズに合わせて復元
+        const tempCanvas = document.createElement('canvas');
+        tempCanvas.width = prevWidth;
+        tempCanvas.height = prevHeight;
+        const tempCtx = tempCanvas.getContext('2d')!;
+        tempCtx.putImageData(savedImage, 0, 0);
+
+        this.Ctx.drawImage(
+            tempCanvas,
+            0, 0, prevWidth, prevHeight,
+            0, 0, this.CanvasElement.width, this.CanvasElement.height
+        );
     }
 
     private SetCanvasSizeForDpi = () => {
