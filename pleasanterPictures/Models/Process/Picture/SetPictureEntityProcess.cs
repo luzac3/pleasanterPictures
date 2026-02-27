@@ -38,6 +38,38 @@ namespace pleasanterPictures.Models.Process.Picture
             return SetPictureEntity(tablesEntity)!;
         }
 
+        public (byte[] bytes, string contentType, string fileName)? GetImageBytes(long resultId, string type)
+        {
+            TablesEntity? tablesEntity = _repository.Select(resultId, true).FirstOrDefault();
+            if (tablesEntity == null)
+                return null;
+
+            string? imageBase64 = GetBase64FromEntity(tablesEntity, type);
+            if (string.IsNullOrEmpty(imageBase64))
+                return null;
+
+            byte[] imageBytes = Convert.FromBase64String(imageBase64);
+
+            // Overlay 画像は ImageSharp を通さずにそのまま返す
+            if (type == "overlay")
+            {
+                return (imageBytes, "image/jpeg", $"image_{resultId}.jpg");
+            }
+
+            // 通常画像は ImageSharp で品質調整
+            using var imageHelper = new ImageHelper(imageBytes);
+            return (imageHelper.GetLowQualityBytes(), "image/webp", $"image_{resultId}.webp");
+        }
+
+        private static string? GetBase64FromEntity(TablesEntity tablesEntity, string type)
+        {
+            return type switch
+            {
+                "overlay" => tablesEntity.DescriptionE?[0],
+                _ => tablesEntity.DescriptionC?[0]
+            };
+        }
+
         private PictureEntity? SetPictureEntity(TablesEntity? tablesEntity)
         {
             if (tablesEntity == null)
@@ -46,21 +78,20 @@ namespace pleasanterPictures.Models.Process.Picture
             }
             else
             {
-                string? pictureImage = tablesEntity.DescriptionC?[0];
-                string? imageOverlay = tablesEntity.DescriptionE?[0];
+                string? pictureImageBase64 = tablesEntity.DescriptionC?[0];
+                string? imageOverlayBase64 = tablesEntity.DescriptionE?[0];
 
                 int overlayImageWidth = 1475;
                 int overlayImageHeight = 1258;
 
-                string pictureImageOverlay = "";
-                if (!string.IsNullOrEmpty(imageOverlay))
+                // Overlay 画像のサイズを取得（ImageSharp 経由）
+                if (!string.IsNullOrEmpty(imageOverlayBase64))
                 {
                     try
                     {
-                        using (ImageHelper imageHelper = new ImageHelper(Convert.FromBase64String(imageOverlay)))
+                        using (ImageHelper imageHelper = new ImageHelper(Convert.FromBase64String(imageOverlayBase64)))
                         {
                             (overlayImageWidth, overlayImageHeight) = imageHelper.GetSize();
-                            pictureImageOverlay = $"data:image/jpeg;base64,{imageOverlay}";
                         }
                     }
                     catch
@@ -73,8 +104,8 @@ namespace pleasanterPictures.Models.Process.Picture
                     resultId: tablesEntity.ReferenceId.ToString(),
                     eventId: EventId.ToString(),
                     picture: tablesEntity.DescriptionA != null && tablesEntity.DescriptionA.Count > 0 ? tablesEntity.DescriptionA[0] : "",
-                    pictureImage: pictureImage == null ? "" : $"data:image/jpeg;base64,{pictureImage}",
-                    pictureImageOverlay: pictureImageOverlay,
+                    pictureImage: !string.IsNullOrEmpty(pictureImageBase64) ? tablesEntity.ReferenceId.ToString() : "",
+                    pictureImageOverlay: !string.IsNullOrEmpty(imageOverlayBase64) ? tablesEntity.ReferenceId.ToString() : "",
                     pictureImageOverlayWidth: overlayImageWidth,
                     pictureImageOverlayHeight: overlayImageHeight,
                     hint: tablesEntity.DescriptionD != null && tablesEntity.DescriptionD.Count > 0 ? tablesEntity.DescriptionD[0] : "",

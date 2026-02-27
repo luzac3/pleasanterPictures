@@ -8,17 +8,18 @@
         <input id="picture_id" type="text" class="nodisplay" value="@(Model.PictureEntity?.ResultId)" />
         <p>@(Model.PictureEntity?.Picture)</p>
 
-        @if (@Model.PictureEntity?.PictureImageOverlay != "")
+        @if (!string.IsNullOrEmpty(Model.PictureEntity?.PictureImageOverlay))
         {
             <div class="picture_canvas_wrapper">
                 <div class="picture_canvas_container" style="width: auto; display: inline-block; position: relative;">
                     <img 
                         id="picture_image_overlay" 
-                         src="@(Model.PictureEntity?.PictureImageOverlay)"
-                         class="picture_image_overlay"
-                         data-width="@(Model.PictureEntity?.PictureImageOverlayWidth)"
-                         data-height="@(Model.PictureEntity?.PictureImageOverlayHeight)"
+                        src="@Url.Action("GetImage", "Picture", new { resultId = Model.PictureEntity?.ResultId, type = "overlay" })"
+                        class="picture_image_overlay"
+                        data-width="@(Model.PictureEntity?.PictureImageOverlayWidth)"
+                        data-height="@(Model.PictureEntity?.PictureImageOverlayHeight)"
                         style="max-width: 100%; height: auto; display: block;"
+                        loading="lazy"
                     />
                     <canvas 
                         id="picture_canvas_overlay" 
@@ -28,15 +29,16 @@
                 </div>
             </div>
         }
-        else if (@Model.PictureEntity?.PictureImage != "")
+        else if (!string.IsNullOrEmpty(Model.PictureEntity?.PictureImage))
         {
             <div class="picture_canvas_wrapper">
                 <div class="picture_canvas_container" style="width: auto; display: inline-block; position: relative;">
                     <img 
                         id="picture_image_overlay" 
-                        src="@(Model.PictureEntity?.PictureImage)"
+                        src="@Url.Action("GetImage", "Picture", new { resultId = Model.PictureEntity?.ResultId, type = "main" })"
                         class="picture_image_overlay"
                         style="max-width: 100%; height: auto; display: block;"
+                        loading="lazy"
                     />
                     <canvas 
                         id="picture_canvas_overlay" 

@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc.ViewEngines;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.SignalR;
 using PleasanterBridge.src.APIBridge;
+using PleasanterBridge.src.DataRepository.Entity;
 using PleasanterBridge.src.DataRepository.Service;
 using pleasanterPictures.Models;
 using pleasanterPictures.Models.Entity.Picture;
@@ -174,6 +175,30 @@ namespace pleasanterPictures.Controllers
             string result = await sendAnswerProcess.Send();
 
             return Json(result.ToString());
+        }
+
+        [HttpGet("Picture/Image/{resultId}")]
+        public IActionResult GetImage(long resultId, [FromQuery] string type = "main")
+        {
+            try
+            {
+                GetPictureProcess getPictureProcess = new(HttpContext, _pleasanterRepository, PictureSiteId);
+                var imageResult = getPictureProcess.GetImageBytes(resultId, type);
+
+                if (imageResult == null)
+                    return NotFound();
+
+                return File(imageResult.Value.bytes, imageResult.Value.contentType, imageResult.Value.fileName);
+            }
+            catch (FormatException)
+            {
+                return BadRequest("Invalid image data");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error in GetImage");
+                return StatusCode(500, "Error retrieving image");
+            }
         }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]

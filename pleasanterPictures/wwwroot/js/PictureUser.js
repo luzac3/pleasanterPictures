@@ -4292,15 +4292,14 @@ class SendAnswer {
                     image: dataUrl
                 };
                 this.Send(answerEntity).then((data) => {
-                    const result = JSON.parse(data);
                     sendElement.disabled = true;
-                    window.alert(result.message);
+                    window.alert(data.message);
                 });
             };
         };
         this.Send = async (answerEntity) => {
             const fetchApi = new _root_share_FetchApi__WEBPACK_IMPORTED_MODULE_0__.FetchApi();
-            return await fetchApi.send(this.url, this.method, this.headers, answerEntity, this.responseKind).then(async (data) => {
+            return await fetchApi.send(this.url, this.method, this.headers, answerEntity, this.responseKind).then((data) => {
                 return data;
             }).catch(e => {
                 throw e;

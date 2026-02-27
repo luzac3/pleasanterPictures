@@ -58,7 +58,12 @@ namespace pleasanterPictures.Models.Process.Picture
 
             if (!response.StatusCode.Equals(HttpStatusCode.OK))
             {
-                return JsonSerializer.Serialize(response);
+                return JsonSerializer.Serialize(new Dictionary<string, string> {
+                    { "status", ((int)response.StatusCode).ToString() },
+                    { "message", response.Message ?? "回答の送信に失敗しました" },
+                    { "url", response.Url ?? "" },
+                    { "sendData", response.SendData ?? "" }
+                });
             }
             else
             {
