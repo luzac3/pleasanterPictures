@@ -1,35 +1,28 @@
+import { DrawingToolbar } from "./DrawingToolbar";
+import { UndoHistory } from "./UndoHistory";
+
 export class Canvas {
     CanvasElement: HTMLCanvasElement;
     Ctx!: CanvasRenderingContext2D;
-    ClearButtonElement: HTMLButtonElement;
     private isDrawing: boolean = false;
     private lastX: number = 0;
     private lastY: number = 0;
-    private drawColor: string = "#333";
-    private isEraser: boolean = false;
     private dpr: number = 1;
     private isOverlay: boolean = false;
-    private penSize: number = 2;
-    private eraserSize: number = 16;
-    private cursorElement: HTMLDivElement;
+    private toolbar: DrawingToolbar;
+    private undoHistory!: UndoHistory;
 
     constructor () {
         this.CanvasElement = document.getElementById('textCanvas') as HTMLCanvasElement;
         const overlayCanvas = document.getElementById('picture_canvas_overlay') as HTMLCanvasElement;
         
-        // オーバーレイキャンバスがあればそちらを使用
         if (overlayCanvas) {
             this.CanvasElement = overlayCanvas;
             this.isOverlay = true;
         }
 
-        this.ClearButtonElement = document.getElementById('clear') as HTMLButtonElement;
         this.dpr = window.devicePixelRatio || 1;
-        this.cursorElement = this.CreateCursorElement();
-
-        this.SetToolButtons();
-        this.SetColorPalette();
-        this.AdjustToolbarSize();
+        this.toolbar = new DrawingToolbar();
 
         if (this.isOverlay) {
             const image = document.getElementById('picture_image_overlay') as HTMLImageElement;
@@ -44,90 +37,45 @@ export class Canvas {
             this.InitCanvas();
         }
 
-        // ウィンドウリサイズ時にCanvasサイズを再設定（描画を保持）
         window.addEventListener('resize', () => {
             this.HandleResize();
-            this.AdjustToolbarSize();
+            this.toolbar.AdjustToolbarSize();
+        });
+
+        window.addEventListener('keydown', (e) => {
+            if ((e.ctrlKey || e.metaKey) && e.key === 'z') {
+                e.preventDefault();
+                this.undoHistory?.Undo();
+            }
         });
     }
 
-    private CreateCursorElement = (): HTMLDivElement => {
-        const cursor = document.createElement('div');
-        cursor.classList.add('canvas-cursor');
-        document.body.appendChild(cursor);
-        this.UpdateCursorStyle();
-        return cursor;
-    }
-
-    private UpdateCursorStyle = () => {
-        if (!this.cursorElement) return;
-        const size = this.isEraser ? this.eraserSize : this.penSize;
-        this.cursorElement.style.width = size + "px";
-        this.cursorElement.style.height = size + "px";
-        this.cursorElement.style.borderColor = this.isEraser ? "#999" : this.drawColor;
-    }
-
-    private ShowCursor = (e: MouseEvent) => {
-        this.cursorElement.style.display = "block";
-        this.MoveCursor(e);
-    }
-
-    private HideCursor = () => {
-        this.cursorElement.style.display = "none";
-    }
-
-    private MoveCursor = (e: MouseEvent) => {
-        this.cursorElement.style.left = e.clientX + "px";
-        this.cursorElement.style.top = e.clientY + "px";
-    }
+    // ── キャンバス初期化 ──
 
     private InitCanvas = () => {
         this.SetCanvasSizeForDpi();
         this.Ctx = this.CanvasElement.getContext('2d')!;
-        this.SetCanvas();
-        this.ActivateCanvas();
+        this.undoHistory = new UndoHistory(this.CanvasElement, this.Ctx);
+        this.SetClearButton();
+        this.ClearCanvas();
         this.SetDrawingPc();
         this.SetDrawingPhone();
     }
 
-    private SetCanvas = () => {
-        this.ClearButtonElement.addEventListener("click", () => {
-            this.ActivateCanvas();
+    private SetClearButton = () => {
+        const clearButton = document.getElementById('clear') as HTMLButtonElement;
+        clearButton?.addEventListener("click", () => {
+            this.undoHistory.Save();
+            this.ClearCanvas();
         });
     }
 
-    private ActivateCanvas = () => {
+    private ClearCanvas = () => {
         if (!this.Ctx) return;
         this.Ctx.clearRect(0, 0, this.CanvasElement.width, this.CanvasElement.height);
     }
 
-    private HandleResize = () => {
-        if (!this.Ctx) return;
-
-        // 現在の描画内容を退避
-        const prevWidth = this.CanvasElement.width;
-        const prevHeight = this.CanvasElement.height;
-        const savedImage = this.Ctx.getImageData(0, 0, prevWidth, prevHeight);
-
-        // DPR更新（ズーム操作対応）
-        this.dpr = window.devicePixelRatio || 1;
-
-        // キャンバスサイズ再設定（内容はクリアされる）
-        this.SetCanvasSizeForDpi();
-
-        // 退避した描画内容を新しいサイズに合わせて復元
-        const tempCanvas = document.createElement('canvas');
-        tempCanvas.width = prevWidth;
-        tempCanvas.height = prevHeight;
-        const tempCtx = tempCanvas.getContext('2d')!;
-        tempCtx.putImageData(savedImage, 0, 0);
-
-        this.Ctx.drawImage(
-            tempCanvas,
-            0, 0, prevWidth, prevHeight,
-            0, 0, this.CanvasElement.width, this.CanvasElement.height
-        );
-    }
+    // ── DPI・リサイズ ──
 
     private SetCanvasSizeForDpi = () => {
         let width: number;
@@ -152,159 +100,110 @@ export class Canvas {
         this.CanvasElement.style.height = height + "px";
     }
 
-    private AdjustToolbarSize = () => {
-        const drawingTools = document.querySelector('.drawing-tools');
-        if (!drawingTools) return;
+    private HandleResize = () => {
+        if (!this.Ctx) return;
 
-        const containerWidth = (drawingTools.parentElement?.offsetWidth || 300);
-        const toolButtonSize = Math.max(32, Math.min(48, containerWidth * 0.08));
-        const colorButtonSize = Math.max(24, Math.min(36, containerWidth * 0.06));
-        const gap = Math.max(4, Math.min(10, containerWidth * 0.02));
+        const prevWidth = this.CanvasElement.width;
+        const prevHeight = this.CanvasElement.height;
+        const savedImage = this.Ctx.getImageData(0, 0, prevWidth, prevHeight);
 
-        document.documentElement.style.setProperty('--tool-button-size', `${toolButtonSize}px`);
-        document.documentElement.style.setProperty('--color-button-size', `${colorButtonSize}px`);
-        document.documentElement.style.setProperty('--gap-size', `${gap}px`);
+        this.dpr = window.devicePixelRatio || 1;
+        this.SetCanvasSizeForDpi();
+
+        const tempCanvas = document.createElement('canvas');
+        tempCanvas.width = prevWidth;
+        tempCanvas.height = prevHeight;
+        const tempCtx = tempCanvas.getContext('2d')!;
+        tempCtx.putImageData(savedImage, 0, 0);
+
+        this.Ctx.drawImage(
+            tempCanvas,
+            0, 0, prevWidth, prevHeight,
+            0, 0, this.CanvasElement.width, this.CanvasElement.height
+        );
+
+        this.undoHistory.Clear();
     }
 
-    private SetToolButtons = () => {
-        const penButton = document.getElementById('tool-pen');
-        const eraserButton = document.getElementById('tool-eraser');
+    // ── ストローク描画（PC/Phone共通） ──
 
-        if (penButton) {
-            penButton.addEventListener('click', () => {
-                this.isEraser = false;
-                penButton.classList.add('active');
-                eraserButton?.classList.remove('active');
-                this.UpdateCursorStyle();
-            });
-        }
-
-        if (eraserButton) {
-            eraserButton.addEventListener('click', () => {
-                this.isEraser = true;
-                eraserButton.classList.add('active');
-                penButton?.classList.remove('active');
-                this.UpdateCursorStyle();
-            });
-        }
+    private GetCanvasPoint = (clientX: number, clientY: number): { x: number; y: number } => {
+        const rect = this.CanvasElement.getBoundingClientRect();
+        return {
+            x: (clientX - rect.left) * this.dpr,
+            y: (clientY - rect.top) * this.dpr
+        };
     }
 
-    private SetColorPalette = () => {
-        const colorButtons = document.querySelectorAll('.color-button');
-        colorButtons.forEach((button) => {
-            button.addEventListener('click', (e) => {
-                const color = (e.target as HTMLButtonElement).dataset.color;
-                if (color) {
-                    this.drawColor = color;
-                    // アクティブ状態を更新
-                    colorButtons.forEach(b => b.classList.remove('active'));
-                    (e.target as HTMLButtonElement).classList.add('active');
-                    this.UpdateCursorStyle();
-                }
-            });
-        });
-        // デフォルトで最初のボタンをアクティブに
-        if (colorButtons.length > 0) {
-            (colorButtons[0] as HTMLButtonElement).classList.add('active');
-        }
+    private StartStroke = (clientX: number, clientY: number) => {
+        this.undoHistory.Save();
+        this.isDrawing = true;
+        const { x, y } = this.GetCanvasPoint(clientX, clientY);
+        this.lastX = x;
+        this.lastY = y;
     }
+
+    private ContinueStroke = (clientX: number, clientY: number) => {
+        if (!this.isDrawing) return;
+        const { x, y } = this.GetCanvasPoint(clientX, clientY);
+
+        if (this.toolbar.IsEraser) {
+            const size = this.toolbar.EraserSize * this.dpr;
+            this.Ctx.clearRect(x - size / 2, y - size / 2, size, size);
+        } else if (this.lastX === x && this.lastY === y) {
+            this.Ctx.beginPath();
+            this.Ctx.arc(x, y, (this.toolbar.PenSize / 2) * this.dpr, 0, Math.PI * 2);
+            this.Ctx.fillStyle = this.toolbar.DrawColor;
+            this.Ctx.fill();
+        } else {
+            this.Ctx.beginPath();
+            this.Ctx.moveTo(this.lastX, this.lastY);
+            this.Ctx.lineTo(x, y);
+            this.Ctx.strokeStyle = this.toolbar.DrawColor;
+            this.Ctx.lineWidth = this.toolbar.PenSize * this.dpr;
+            this.Ctx.lineCap = "round";
+            this.Ctx.stroke();
+        }
+
+        this.lastX = x;
+        this.lastY = y;
+    }
+
+    private EndStroke = () => {
+        this.isDrawing = false;
+    }
+
+    // ── イベントバインド ──
 
     private SetDrawingPc = () => {
-        this.CanvasElement.addEventListener('mouseenter', (e) => this.ShowCursor(e));
+        this.CanvasElement.addEventListener('mouseenter', (e) => this.toolbar.Cursor.Show(e));
         this.CanvasElement.addEventListener('mouseleave', () => {
-            this.HideCursor();
-            this.isDrawing = false;
+            this.toolbar.Cursor.Hide();
+            this.EndStroke();
         });
-
         this.CanvasElement.addEventListener('mousedown', (e) => {
-            this.isDrawing = true;
-            const rect = this.CanvasElement.getBoundingClientRect();
-            this.lastX = (e.clientX - rect.left) * this.dpr;
-            this.lastY = (e.clientY - rect.top) * this.dpr;
+            this.StartStroke(e.clientX, e.clientY);
         });
-
         this.CanvasElement.addEventListener('mousemove', (e) => {
-            this.MoveCursor(e);
-            if (!this.isDrawing) return;
-            const rect = this.CanvasElement.getBoundingClientRect();
-            const x = (e.clientX - rect.left) * this.dpr;
-            const y = (e.clientY - rect.top) * this.dpr;
-            
-            if (this.isEraser) {
-                const size = this.eraserSize * this.dpr;
-                this.Ctx.clearRect(x - size / 2, y - size / 2, size, size);
-            } else {
-                if (this.lastX === x && this.lastY === y) {
-                    this.Ctx.beginPath();
-                    this.Ctx.arc(x, y, (this.penSize / 2) * this.dpr, 0, Math.PI * 2);
-                    this.Ctx.fillStyle = this.drawColor;
-                    this.Ctx.fill();
-                } else {
-                    this.Ctx.beginPath();
-                    this.Ctx.moveTo(this.lastX, this.lastY);
-                    this.Ctx.lineTo(x, y);
-                    this.Ctx.strokeStyle = this.drawColor;
-                    this.Ctx.lineWidth = this.penSize * this.dpr;
-                    this.Ctx.lineCap = "round";
-                    this.Ctx.stroke();
-                }
-            }
-            this.lastX = x;
-            this.lastY = y;
+            this.toolbar.Cursor.Move(e);
+            this.ContinueStroke(e.clientX, e.clientY);
         });
-
-        this.CanvasElement.addEventListener('mouseup', () => {
-            this.isDrawing = false;
-        });
+        this.CanvasElement.addEventListener('mouseup', () => this.EndStroke());
     }
 
     private SetDrawingPhone = () => {
         this.CanvasElement.addEventListener('touchstart', (e) => {
             e.preventDefault();
-            this.isDrawing = true;
-            const rect = this.CanvasElement.getBoundingClientRect();
-            const touch = e.touches[0];
-            this.lastX = (touch.clientX - rect.left) * this.dpr;
-            this.lastY = (touch.clientY - rect.top) * this.dpr;
+            this.StartStroke(e.touches[0].clientX, e.touches[0].clientY);
         }, { passive: false });
 
         this.CanvasElement.addEventListener('touchmove', (e) => {
             if (!this.isDrawing) return;
             e.preventDefault();
-            const rect = this.CanvasElement.getBoundingClientRect();
-            const touch = e.touches[0];
-            const x = (touch.clientX - rect.left) * this.dpr;
-            const y = (touch.clientY - rect.top) * this.dpr;
-            
-            if (this.isEraser) {
-                const size = this.eraserSize * this.dpr;
-                this.Ctx.clearRect(x - size / 2, y - size / 2, size, size);
-            } else {
-                if (this.lastX === x && this.lastY === y) {
-                    this.Ctx.beginPath();
-                    this.Ctx.arc(x, y, (this.penSize / 2) * this.dpr, 0, Math.PI * 2);
-                    this.Ctx.fillStyle = this.drawColor;
-                    this.Ctx.fill();
-                } else {
-                    this.Ctx.beginPath();
-                    this.Ctx.moveTo(this.lastX, this.lastY);
-                    this.Ctx.lineTo(x, y);
-                    this.Ctx.strokeStyle = this.drawColor;
-                    this.Ctx.lineWidth = this.penSize * this.dpr;
-                    this.Ctx.lineCap = "round";
-                    this.Ctx.stroke();
-                }
-            }
-            this.lastX = x;
-            this.lastY = y;
+            this.ContinueStroke(e.touches[0].clientX, e.touches[0].clientY);
         }, { passive: false });
 
-        this.CanvasElement.addEventListener('touchend', () => {
-            this.isDrawing = false;
-        });
-
-        this.CanvasElement.addEventListener('touchcancel', () => {
-            this.isDrawing = false;
-        });
+        this.CanvasElement.addEventListener('touchend', () => this.EndStroke());
+        this.CanvasElement.addEventListener('touchcancel', () => this.EndStroke());
     }
 }

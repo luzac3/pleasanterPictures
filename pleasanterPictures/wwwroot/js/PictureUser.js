@@ -3892,80 +3892,40 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   Canvas: () => (/* binding */ Canvas)
 /* harmony export */ });
+/* harmony import */ var _DrawingToolbar__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./DrawingToolbar */ "./wwwroot/ts/PictureUser/DrawingToolbar.ts");
+/* harmony import */ var _UndoHistory__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./UndoHistory */ "./wwwroot/ts/PictureUser/UndoHistory.ts");
+
+
 class Canvas {
     constructor() {
         this.isDrawing = false;
         this.lastX = 0;
         this.lastY = 0;
-        this.drawColor = "#333";
-        this.isEraser = false;
         this.dpr = 1;
         this.isOverlay = false;
-        this.penSize = 2;
-        this.eraserSize = 16;
-        this.CreateCursorElement = () => {
-            const cursor = document.createElement('div');
-            cursor.classList.add('canvas-cursor');
-            document.body.appendChild(cursor);
-            this.UpdateCursorStyle();
-            return cursor;
-        };
-        this.UpdateCursorStyle = () => {
-            if (!this.cursorElement)
-                return;
-            const size = this.isEraser ? this.eraserSize : this.penSize;
-            this.cursorElement.style.width = size + "px";
-            this.cursorElement.style.height = size + "px";
-            this.cursorElement.style.borderColor = this.isEraser ? "#999" : this.drawColor;
-        };
-        this.ShowCursor = (e) => {
-            this.cursorElement.style.display = "block";
-            this.MoveCursor(e);
-        };
-        this.HideCursor = () => {
-            this.cursorElement.style.display = "none";
-        };
-        this.MoveCursor = (e) => {
-            this.cursorElement.style.left = e.clientX + "px";
-            this.cursorElement.style.top = e.clientY + "px";
-        };
+        // ── キャンバス初期化 ──
         this.InitCanvas = () => {
             this.SetCanvasSizeForDpi();
             this.Ctx = this.CanvasElement.getContext('2d');
-            this.SetCanvas();
-            this.ActivateCanvas();
+            this.undoHistory = new _UndoHistory__WEBPACK_IMPORTED_MODULE_1__.UndoHistory(this.CanvasElement, this.Ctx);
+            this.SetClearButton();
+            this.ClearCanvas();
             this.SetDrawingPc();
             this.SetDrawingPhone();
         };
-        this.SetCanvas = () => {
-            this.ClearButtonElement.addEventListener("click", () => {
-                this.ActivateCanvas();
+        this.SetClearButton = () => {
+            const clearButton = document.getElementById('clear');
+            clearButton?.addEventListener("click", () => {
+                this.undoHistory.Save();
+                this.ClearCanvas();
             });
         };
-        this.ActivateCanvas = () => {
+        this.ClearCanvas = () => {
             if (!this.Ctx)
                 return;
             this.Ctx.clearRect(0, 0, this.CanvasElement.width, this.CanvasElement.height);
         };
-        this.HandleResize = () => {
-            if (!this.Ctx)
-                return;
-            // 現在の描画内容を退避
-            const prevWidth = this.CanvasElement.width;
-            const prevHeight = this.CanvasElement.height;
-            const savedImage = this.Ctx.getImageData(0, 0, prevWidth, prevHeight);
-            // DPR更新（ズーム操作対応）
-            this.dpr = window.devicePixelRatio || 1;
-            // キャンバスサイズ再設定（内容はクリアされる）
-            this.SetCanvasSizeForDpi();
-            // 退避した描画内容を新しいサイズに合わせて復元
-            const tempCanvas = document.createElement('canvas');
-            tempCanvas.width = prevWidth;
-            tempCanvas.height = prevHeight;
-            const tempCtx = tempCanvas.getContext('2d');
-            tempCtx.putImageData(savedImage, 0, 0);
-            this.Ctx.drawImage(tempCanvas, 0, 0, prevWidth, prevHeight, 0, 0, this.CanvasElement.width, this.CanvasElement.height);
-        };
+        // ── DPI・リサイズ ──
         this.SetCanvasSizeForDpi = () => {
             let width;
             let height;
@@ -3988,165 +3948,104 @@ class Canvas {
             this.CanvasElement.style.width = width + "px";
             this.CanvasElement.style.height = height + "px";
         };
-        this.AdjustToolbarSize = () => {
-            const drawingTools = document.querySelector('.drawing-tools');
-            if (!drawingTools)
+        this.HandleResize = () => {
+            if (!this.Ctx)
                 return;
-            const containerWidth = (drawingTools.parentElement?.offsetWidth || 300);
-            const toolButtonSize = Math.max(32, Math.min(48, containerWidth * 0.08));
-            const colorButtonSize = Math.max(24, Math.min(36, containerWidth * 0.06));
-            const gap = Math.max(4, Math.min(10, containerWidth * 0.02));
-            document.documentElement.style.setProperty('--tool-button-size', `${toolButtonSize}px`);
-            document.documentElement.style.setProperty('--color-button-size', `${colorButtonSize}px`);
-            document.documentElement.style.setProperty('--gap-size', `${gap}px`);
+            const prevWidth = this.CanvasElement.width;
+            const prevHeight = this.CanvasElement.height;
+            const savedImage = this.Ctx.getImageData(0, 0, prevWidth, prevHeight);
+            this.dpr = window.devicePixelRatio || 1;
+            this.SetCanvasSizeForDpi();
+            const tempCanvas = document.createElement('canvas');
+            tempCanvas.width = prevWidth;
+            tempCanvas.height = prevHeight;
+            const tempCtx = tempCanvas.getContext('2d');
+            tempCtx.putImageData(savedImage, 0, 0);
+            this.Ctx.drawImage(tempCanvas, 0, 0, prevWidth, prevHeight, 0, 0, this.CanvasElement.width, this.CanvasElement.height);
+            this.undoHistory.Clear();
         };
-        this.SetToolButtons = () => {
-            const penButton = document.getElementById('tool-pen');
-            const eraserButton = document.getElementById('tool-eraser');
-            if (penButton) {
-                penButton.addEventListener('click', () => {
-                    this.isEraser = false;
-                    penButton.classList.add('active');
-                    eraserButton?.classList.remove('active');
-                    this.UpdateCursorStyle();
-                });
-            }
-            if (eraserButton) {
-                eraserButton.addEventListener('click', () => {
-                    this.isEraser = true;
-                    eraserButton.classList.add('active');
-                    penButton?.classList.remove('active');
-                    this.UpdateCursorStyle();
-                });
-            }
+        // ── ストローク描画（PC/Phone共通） ──
+        this.GetCanvasPoint = (clientX, clientY) => {
+            const rect = this.CanvasElement.getBoundingClientRect();
+            return {
+                x: (clientX - rect.left) * this.dpr,
+                y: (clientY - rect.top) * this.dpr
+            };
         };
-        this.SetColorPalette = () => {
-            const colorButtons = document.querySelectorAll('.color-button');
-            colorButtons.forEach((button) => {
-                button.addEventListener('click', (e) => {
-                    const color = e.target.dataset.color;
-                    if (color) {
-                        this.drawColor = color;
-                        // アクティブ状態を更新
-                        colorButtons.forEach(b => b.classList.remove('active'));
-                        e.target.classList.add('active');
-                        this.UpdateCursorStyle();
-                    }
-                });
-            });
-            // デフォルトで最初のボタンをアクティブに
-            if (colorButtons.length > 0) {
-                colorButtons[0].classList.add('active');
-            }
+        this.StartStroke = (clientX, clientY) => {
+            this.undoHistory.Save();
+            this.isDrawing = true;
+            const { x, y } = this.GetCanvasPoint(clientX, clientY);
+            this.lastX = x;
+            this.lastY = y;
         };
+        this.ContinueStroke = (clientX, clientY) => {
+            if (!this.isDrawing)
+                return;
+            const { x, y } = this.GetCanvasPoint(clientX, clientY);
+            if (this.toolbar.IsEraser) {
+                const size = this.toolbar.EraserSize * this.dpr;
+                this.Ctx.clearRect(x - size / 2, y - size / 2, size, size);
+            }
+            else if (this.lastX === x && this.lastY === y) {
+                this.Ctx.beginPath();
+                this.Ctx.arc(x, y, (this.toolbar.PenSize / 2) * this.dpr, 0, Math.PI * 2);
+                this.Ctx.fillStyle = this.toolbar.DrawColor;
+                this.Ctx.fill();
+            }
+            else {
+                this.Ctx.beginPath();
+                this.Ctx.moveTo(this.lastX, this.lastY);
+                this.Ctx.lineTo(x, y);
+                this.Ctx.strokeStyle = this.toolbar.DrawColor;
+                this.Ctx.lineWidth = this.toolbar.PenSize * this.dpr;
+                this.Ctx.lineCap = "round";
+                this.Ctx.stroke();
+            }
+            this.lastX = x;
+            this.lastY = y;
+        };
+        this.EndStroke = () => {
+            this.isDrawing = false;
+        };
+        // ── イベントバインド ──
         this.SetDrawingPc = () => {
-            this.CanvasElement.addEventListener('mouseenter', (e) => this.ShowCursor(e));
+            this.CanvasElement.addEventListener('mouseenter', (e) => this.toolbar.Cursor.Show(e));
             this.CanvasElement.addEventListener('mouseleave', () => {
-                this.HideCursor();
-                this.isDrawing = false;
+                this.toolbar.Cursor.Hide();
+                this.EndStroke();
             });
             this.CanvasElement.addEventListener('mousedown', (e) => {
-                this.isDrawing = true;
-                const rect = this.CanvasElement.getBoundingClientRect();
-                this.lastX = (e.clientX - rect.left) * this.dpr;
-                this.lastY = (e.clientY - rect.top) * this.dpr;
+                this.StartStroke(e.clientX, e.clientY);
             });
             this.CanvasElement.addEventListener('mousemove', (e) => {
-                this.MoveCursor(e);
-                if (!this.isDrawing)
-                    return;
-                const rect = this.CanvasElement.getBoundingClientRect();
-                const x = (e.clientX - rect.left) * this.dpr;
-                const y = (e.clientY - rect.top) * this.dpr;
-                if (this.isEraser) {
-                    const size = this.eraserSize * this.dpr;
-                    this.Ctx.clearRect(x - size / 2, y - size / 2, size, size);
-                }
-                else {
-                    if (this.lastX === x && this.lastY === y) {
-                        this.Ctx.beginPath();
-                        this.Ctx.arc(x, y, (this.penSize / 2) * this.dpr, 0, Math.PI * 2);
-                        this.Ctx.fillStyle = this.drawColor;
-                        this.Ctx.fill();
-                    }
-                    else {
-                        this.Ctx.beginPath();
-                        this.Ctx.moveTo(this.lastX, this.lastY);
-                        this.Ctx.lineTo(x, y);
-                        this.Ctx.strokeStyle = this.drawColor;
-                        this.Ctx.lineWidth = this.penSize * this.dpr;
-                        this.Ctx.lineCap = "round";
-                        this.Ctx.stroke();
-                    }
-                }
-                this.lastX = x;
-                this.lastY = y;
+                this.toolbar.Cursor.Move(e);
+                this.ContinueStroke(e.clientX, e.clientY);
             });
-            this.CanvasElement.addEventListener('mouseup', () => {
-                this.isDrawing = false;
-            });
+            this.CanvasElement.addEventListener('mouseup', () => this.EndStroke());
         };
         this.SetDrawingPhone = () => {
             this.CanvasElement.addEventListener('touchstart', (e) => {
                 e.preventDefault();
-                this.isDrawing = true;
-                const rect = this.CanvasElement.getBoundingClientRect();
-                const touch = e.touches[0];
-                this.lastX = (touch.clientX - rect.left) * this.dpr;
-                this.lastY = (touch.clientY - rect.top) * this.dpr;
+                this.StartStroke(e.touches[0].clientX, e.touches[0].clientY);
             }, { passive: false });
             this.CanvasElement.addEventListener('touchmove', (e) => {
                 if (!this.isDrawing)
                     return;
                 e.preventDefault();
-                const rect = this.CanvasElement.getBoundingClientRect();
-                const touch = e.touches[0];
-                const x = (touch.clientX - rect.left) * this.dpr;
-                const y = (touch.clientY - rect.top) * this.dpr;
-                if (this.isEraser) {
-                    const size = this.eraserSize * this.dpr;
-                    this.Ctx.clearRect(x - size / 2, y - size / 2, size, size);
-                }
-                else {
-                    if (this.lastX === x && this.lastY === y) {
-                        this.Ctx.beginPath();
-                        this.Ctx.arc(x, y, (this.penSize / 2) * this.dpr, 0, Math.PI * 2);
-                        this.Ctx.fillStyle = this.drawColor;
-                        this.Ctx.fill();
-                    }
-                    else {
-                        this.Ctx.beginPath();
-                        this.Ctx.moveTo(this.lastX, this.lastY);
-                        this.Ctx.lineTo(x, y);
-                        this.Ctx.strokeStyle = this.drawColor;
-                        this.Ctx.lineWidth = this.penSize * this.dpr;
-                        this.Ctx.lineCap = "round";
-                        this.Ctx.stroke();
-                    }
-                }
-                this.lastX = x;
-                this.lastY = y;
+                this.ContinueStroke(e.touches[0].clientX, e.touches[0].clientY);
             }, { passive: false });
-            this.CanvasElement.addEventListener('touchend', () => {
-                this.isDrawing = false;
-            });
-            this.CanvasElement.addEventListener('touchcancel', () => {
-                this.isDrawing = false;
-            });
+            this.CanvasElement.addEventListener('touchend', () => this.EndStroke());
+            this.CanvasElement.addEventListener('touchcancel', () => this.EndStroke());
         };
         this.CanvasElement = document.getElementById('textCanvas');
         const overlayCanvas = document.getElementById('picture_canvas_overlay');
-        // オーバーレイキャンバスがあればそちらを使用
         if (overlayCanvas) {
             this.CanvasElement = overlayCanvas;
             this.isOverlay = true;
         }
-        this.ClearButtonElement = document.getElementById('clear');
         this.dpr = window.devicePixelRatio || 1;
-        this.cursorElement = this.CreateCursorElement();
-        this.SetToolButtons();
-        this.SetColorPalette();
-        this.AdjustToolbarSize();
+        this.toolbar = new _DrawingToolbar__WEBPACK_IMPORTED_MODULE_0__.DrawingToolbar();
         if (this.isOverlay) {
             const image = document.getElementById('picture_image_overlay');
             if (image) {
@@ -4161,11 +4060,135 @@ class Canvas {
         else {
             this.InitCanvas();
         }
-        // ウィンドウリサイズ時にCanvasサイズを再設定（描画を保持）
         window.addEventListener('resize', () => {
             this.HandleResize();
-            this.AdjustToolbarSize();
+            this.toolbar.AdjustToolbarSize();
         });
+        window.addEventListener('keydown', (e) => {
+            if ((e.ctrlKey || e.metaKey) && e.key === 'z') {
+                e.preventDefault();
+                this.undoHistory?.Undo();
+            }
+        });
+    }
+}
+
+
+/***/ }),
+
+/***/ "./wwwroot/ts/PictureUser/CanvasCursor.ts":
+/*!************************************************!*\
+  !*** ./wwwroot/ts/PictureUser/CanvasCursor.ts ***!
+  \************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   CanvasCursor: () => (/* binding */ CanvasCursor)
+/* harmony export */ });
+class CanvasCursor {
+    constructor() {
+        this.UpdateStyle = (isEraser, penSize, eraserSize, drawColor) => {
+            const size = isEraser ? eraserSize : penSize;
+            this.element.style.width = size + "px";
+            this.element.style.height = size + "px";
+            this.element.style.borderColor = isEraser ? "#999" : drawColor;
+        };
+        this.Show = (e) => {
+            this.element.style.display = "block";
+            this.Move(e);
+        };
+        this.Hide = () => {
+            this.element.style.display = "none";
+        };
+        this.Move = (e) => {
+            this.element.style.left = e.clientX + "px";
+            this.element.style.top = e.clientY + "px";
+        };
+        this.element = document.createElement('div');
+        this.element.classList.add('canvas-cursor');
+        document.body.appendChild(this.element);
+    }
+}
+
+
+/***/ }),
+
+/***/ "./wwwroot/ts/PictureUser/DrawingToolbar.ts":
+/*!**************************************************!*\
+  !*** ./wwwroot/ts/PictureUser/DrawingToolbar.ts ***!
+  \**************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   DrawingToolbar: () => (/* binding */ DrawingToolbar)
+/* harmony export */ });
+/* harmony import */ var _CanvasCursor__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./CanvasCursor */ "./wwwroot/ts/PictureUser/CanvasCursor.ts");
+
+class DrawingToolbar {
+    get IsEraser() { return this._isEraser; }
+    get DrawColor() { return this._drawColor; }
+    constructor() {
+        this._isEraser = false;
+        this._drawColor = "#333";
+        this.PenSize = 2;
+        this.EraserSize = 16;
+        this.AdjustToolbarSize = () => {
+            const drawingTools = document.querySelector('.drawing-tools');
+            if (!drawingTools)
+                return;
+            const containerWidth = (drawingTools.parentElement?.offsetWidth || 300);
+            const toolButtonSize = Math.max(32, Math.min(48, containerWidth * 0.08));
+            const colorButtonSize = Math.max(24, Math.min(36, containerWidth * 0.06));
+            const gap = Math.max(4, Math.min(10, containerWidth * 0.02));
+            document.documentElement.style.setProperty('--tool-button-size', `${toolButtonSize}px`);
+            document.documentElement.style.setProperty('--color-button-size', `${colorButtonSize}px`);
+            document.documentElement.style.setProperty('--gap-size', `${gap}px`);
+        };
+        this.UpdateCursorStyle = () => {
+            this.Cursor.UpdateStyle(this._isEraser, this.PenSize, this.EraserSize, this._drawColor);
+        };
+        this.SetToolButtons = () => {
+            const penButton = document.getElementById('tool-pen');
+            const eraserButton = document.getElementById('tool-eraser');
+            penButton?.addEventListener('click', () => {
+                this._isEraser = false;
+                penButton.classList.add('active');
+                eraserButton?.classList.remove('active');
+                this.UpdateCursorStyle();
+            });
+            eraserButton?.addEventListener('click', () => {
+                this._isEraser = true;
+                eraserButton.classList.add('active');
+                penButton?.classList.remove('active');
+                this.UpdateCursorStyle();
+            });
+        };
+        this.SetColorPalette = () => {
+            const colorButtons = document.querySelectorAll('.color-button');
+            colorButtons.forEach((button) => {
+                button.addEventListener('click', (e) => {
+                    const color = e.target.dataset.color;
+                    if (color) {
+                        this._drawColor = color;
+                        colorButtons.forEach(b => b.classList.remove('active'));
+                        e.target.classList.add('active');
+                        this.UpdateCursorStyle();
+                    }
+                });
+            });
+            if (colorButtons.length > 0) {
+                colorButtons[0].classList.add('active');
+            }
+        };
+        this.Cursor = new _CanvasCursor__WEBPACK_IMPORTED_MODULE_0__.CanvasCursor();
+        this.UpdateCursorStyle();
+        this.SetToolButtons();
+        this.SetColorPalette();
+        this.AdjustToolbarSize();
     }
 }
 
@@ -4323,6 +4346,56 @@ class SendAnswer {
             'X-Requested-With': 'XMLHttpRequest'
         };
         this.responseKind = "json";
+    }
+}
+
+
+/***/ }),
+
+/***/ "./wwwroot/ts/PictureUser/UndoHistory.ts":
+/*!***********************************************!*\
+  !*** ./wwwroot/ts/PictureUser/UndoHistory.ts ***!
+  \***********************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   UndoHistory: () => (/* binding */ UndoHistory)
+/* harmony export */ });
+class UndoHistory {
+    constructor(canvas, ctx, maxHistory = 30) {
+        this.history = [];
+        this.Save = () => {
+            const snapshot = this.ctx.getImageData(0, 0, this.canvas.width, this.canvas.height);
+            this.history.push(snapshot);
+            if (this.history.length > this.maxHistory) {
+                this.history.shift();
+            }
+            this.UpdateButtonState();
+        };
+        this.Undo = () => {
+            if (this.history.length === 0)
+                return;
+            const snapshot = this.history.pop();
+            this.ctx.putImageData(snapshot, 0, 0);
+            this.UpdateButtonState();
+        };
+        this.Clear = () => {
+            this.history = [];
+            this.UpdateButtonState();
+        };
+        this.UpdateButtonState = () => {
+            if (this.undoButton) {
+                this.undoButton.disabled = this.history.length === 0;
+            }
+        };
+        this.canvas = canvas;
+        this.ctx = ctx;
+        this.maxHistory = maxHistory;
+        this.undoButton = document.getElementById('tool-undo');
+        this.undoButton?.addEventListener('click', () => this.Undo());
+        this.UpdateButtonState();
     }
 }
 
